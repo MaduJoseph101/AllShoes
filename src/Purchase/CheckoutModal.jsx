@@ -387,13 +387,13 @@ function CheckoutModal() {
               )}
 
               {formData.paymentMethod === 'paypal' && (
-                <div className='bg-blue-50 text-blue-900 p-4 rounded-2xl text-xs font-semibold text-center'>
+                <div className=' p-4 rounded-2xl text-xs font-semibold text-center'>
                   You will be redirected to PayPal to complete your payment securely.
                 </div>
               )}
 
               {formData.paymentMethod === 'cod' && (
-                <div className='bg-amber-50 text-amber-900 p-4 rounded-2xl text-xs font-semibold text-center'>
+                <div className='p-4 rounded-2xl text-xs font-semibold text-center'>
                   Pay in cash upon delivery of your order.
                 </div>
               )}
@@ -404,7 +404,7 @@ function CheckoutModal() {
           {step === 3 && (
             <div className='text-center space-y-6 py-4'>
               <div className='flex justify-center'>
-                <div className='bg-green-100 p-4 rounded-full text-green-600 text-5xl animate-bounce-short'>
+                <div className='bg-green-100 p-4 rounded-full text-green-600 text-4xl animate-bounce-short'>
                   <FiCheckCircle />
                 </div>
               </div>
