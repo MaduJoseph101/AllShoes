@@ -22,7 +22,7 @@ function Footer() {
             <h3 className='text-xs sm:text-sm font-semibold tracking-wider uppercase mb-4 text-white'>
               SUBSCRIBE TO OUR EMAILS
             </h3>
-            <form onSubmit={handleSignupSubmit} className='bg-white rounded-full flex items-center px-4 py-2 sm:py-2.5 max-w-md w-full shadow-sm'>
+            <form onSubmit={handleSignupSubmit} className='bg-white rounded-2xl flex items-center px-4 py-3.5 max-w-md w-full shadow-sm'>
               <input
                 type='email'
                 placeholder='Email Address'

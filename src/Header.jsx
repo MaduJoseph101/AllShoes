@@ -18,7 +18,7 @@ const NAV_LINKS = [
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { itemCount, openDrawer, wishlistItems } = useCart()
+  const { itemCount, openDrawer, wishlistItems, user } = useCart()
   const savedCount = wishlistItems ? wishlistItems.length : 0
   const location = useLocation()
   const activeClass = (to) =>
@@ -67,7 +67,17 @@ function Header() {
                     </span>
                   )}
                 </Link>
-                <Link to="/signup" className=' text-lg lg:text-[1.1rem] font-bold' aria-label='profile'><CgProfile /></Link>
+                <Link
+                  to="/signup"
+                  className={`relative text-lg lg:text-[1.1rem] font-bold ${location.pathname === '/signup' ? 'text-white font-bold' : 'hover:text-gray-300 transition-colors'}`}
+                  aria-label='profile'
+                  title={user ? `Signed in as ${user.fullName || user.email}` : 'Sign Up / Profile'}
+                >
+                  <CgProfile />
+                  {user && (
+                    <span className='absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-[#212121]' />
+                  )}
+                </Link>
             </div>
         </header>
 
@@ -79,7 +89,17 @@ function Header() {
               <RxHamburgerMenu />
             </button>
 
-             <Link to="/signup" className=' text-xl font-bold'><CgProfile /></Link>
+             <Link
+               to="/signup"
+               className='relative text-xl font-bold'
+               aria-label='profile'
+               title={user ? `Signed in as ${user.fullName || user.email}` : 'Sign Up / Profile'}
+             >
+               <CgProfile />
+               {user && (
+                 <span className='absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-[#212121]' />
+               )}
+             </Link>
 
            </div>
 

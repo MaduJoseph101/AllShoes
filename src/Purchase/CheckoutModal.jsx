@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '../CartContext'
-import { FiX, FiCheckCircle, FiCreditCard, FiTruck, FiArrowRight, FiArrowLeft } from 'react-icons/fi'
+import { FiX, FiCheckCircle, FiCreditCard, FiTruck, FiArrowRight, FiArrowLeft, FiUser } from 'react-icons/fi'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -8,22 +8,50 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 })
 
 function CheckoutModal() {
-  const { isCheckoutOpen, closeCheckout, subtotal, clearCart } = useCart()
+  const { isCheckoutOpen, closeCheckout, subtotal, clearCart, user } = useCart()
   const [step, setStep] = useState(1) // 1: Shipping, 2: Payment, 3: Confirmation
 
   // FORM STATES
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    address: '',
-    city: '',
-    zip: '',
-    phone: '',
+    fullName: user?.fullName || '',
+    email: user?.email || '',
+    address: user?.address || '',
+    city: user?.city || '',
+    zip: user?.zip || '',
+    phone: user?.phone || '',
     paymentMethod: 'card',
     cardNumber: '',
     cardExpiry: '',
     cardCvc: '',
   })
+
+  // Synchronize with registered user in local storage
+  useEffect(() => {
+    if (isCheckoutOpen) {
+      if (user) {
+        setFormData((prev) => ({
+          ...prev,
+          fullName: user.fullName || '',
+          email: user.email || '',
+          address: user.address || '',
+          city: user.city || '',
+          zip: user.zip || '',
+          phone: user.phone || '',
+        }))
+      } else {
+        // SHIPPING DETAILS RESET WHEB USER IS REMOVED FROM LOCAL STORAGE
+        setFormData((prev) => ({
+          ...prev,
+          fullName: '',
+          email: '',
+          address: '',
+          city: '',
+          zip: '',
+          phone: '',
+        }))
+      }
+    }
+  }, [isCheckoutOpen, user])
 
   const [orderId, setOrderId] = useState('')
   const [errors, setErrors] = useState({})
@@ -91,7 +119,7 @@ function CheckoutModal() {
       <div className='fixed inset-0 bg-black/60 backdrop-blur-xs' onClick={handleClose} />
 
       {/* MODAL BOX */}
-      <div className='relative bg-[#ECE9E2] rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-gray-300 z-10 my-8 sm:my-0 sm:h-[90vh] sm:flex sm:flex-col'>
+      <div className='relative bg-[#ECE9E2] rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-gray-300 z-10 max-h-[80vh] flex flex-col sm:my-0 sm:h-[90vh]'>
         
         {/* HEADER */}
         <div className='bg-[#212121] text-white p-6 flex items-center justify-between sm:shrink-0'>
@@ -132,14 +160,32 @@ function CheckoutModal() {
           </div>
         )}
 
-        <div className='p-6 sm:p-8 space-y-6 max-h-[75vh] overflow-y-auto sm:max-h-none sm:flex-1 sm:min-h-0'>
+        <div className='p-6 sm:p-8 space-y-6 flex-1 min-h-0 overflow-y-auto'>
           
           {/* STEP 1: SHIPPING FORM */}
           {step === 1 && (
             <div className='space-y-4'>
-              <h3 className='text-sm px-1 font-extrabold uppercase tracking-wider text-gray-900 flex items-center gap-2'>
-                <FiTruck /> Shipping Details
-              </h3>
+              <div className='flex items-center justify-between'>
+                <h3 className='text-sm px-1 font-extrabold uppercase tracking-wider text-gray-900 flex items-center gap-2'>
+                  <FiTruck /> Shipping Details
+                </h3>
+            
+              </div>
+
+              {user && (
+                <div className='bg-white/80 border border-gray-200 rounded-2xl p-3 px-4 flex items-center justify-between text-xs text-gray-600'>
+                  <div className='flex items-center gap-2'>
+                    <div className='w-7 h-7 rounded-full bg-black text-white flex items-center justify-center font-bold text-[10px] uppercase'>
+                      {user.fullName ? user.fullName.charAt(0) : 'U'}
+                    </div>
+                    <div>
+                      <p className='font-bold text-gray-900 leading-tight'>{user.fullName || 'Registered User'}</p>
+                      <p className='text-[10px] text-gray-500'>{user.email}</p>
+                    </div>
+                  </div>
+                  
+                </div>
+              )}
 
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 <div>
@@ -221,6 +267,21 @@ function CheckoutModal() {
                     className={`w-full bg-white border ${errors.zip ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
                   />
                   {errors.zip && <p className='text-[10px] text-red-500 font-semibold mt-1'>{errors.zip}</p>}
+                </div>
+
+                <div className='sm:col-span-2'>
+                  <label htmlFor='phone' className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                    Phone Number (Optional)
+                  </label>
+                  <input
+                    id='phone'
+                    type='tel'
+                    name='phone'
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder='+1 (555) 000-0000'
+                    className='w-full bg-white border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
+                  />
                 </div>
               </div>
 

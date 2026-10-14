@@ -8,7 +8,7 @@ import Prefooter from './Homepages/Prefooter'
 function Homepage() {
   return (
     <div className='flex flex-col '>
-      <section aria-label='hero-section' className='h-[85dvh] sm:h-[92vh] w-[100%] mb-5 font-jakarta bg-[url(/home.jpg)] bg-blend-darken bg-[#0000003f] bg-cover bg-center flex items-center justify-center'>
+      <section aria-label='hero-section' className='h-[95dvh] sm:h-[92vh] w-[100%] mb-5 font-jakarta bg-[url(/home.jpg)] bg-blend-darken bg-[#0000003f] bg-cover bg-center flex items-center justify-center'>
         <div className='text-center flex flex-col gap-4 sm:gap-4 text-white px-4'>
           <h1 className='text-4xl capitalize sm:text-4xl md:text-5xl lg:text-6xl font-bold'>All new collection</h1>
           <p className='text-sm sm:text-2xl'>The world's most comfortable shoes</p>

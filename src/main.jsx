@@ -14,13 +14,13 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import FAQ from './Props/FAQ'
 import { CartProvider } from './CartContext'
 
-
 import CartDrawer from './Purchase/CartDrawer'
 import CheckoutModal from './Purchase/CheckoutModal'
 import UndoToast from './Purchase/UndoToast'
 
 import WishlistToast from './Purchase/WishlistToast'
 import SavedItems from './Purchase/SavedItems'
+import AuthPromptModal from './Purchase/AuthPromptModal'
 
 function ScrollToTop() {
   const location = useLocation()
@@ -52,6 +52,7 @@ createRoot(document.getElementById('root')).render(
         <CheckoutModal />
         <UndoToast />
         <WishlistToast />
+        <AuthPromptModal />
       </BrowserRouter>
     </CartProvider>
   </StrictMode>,

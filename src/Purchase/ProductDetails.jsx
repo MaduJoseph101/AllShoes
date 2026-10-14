@@ -11,7 +11,7 @@ const OUT_OF_STOCK_SIZES = [12, 15]
 function ProductDetails() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const { addToCart, cartItems, toggleWishlist, isInWishlist } = useCart()
+  const { addToCart, cartItems, toggleWishlist, isInWishlist, user } = useCart()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -63,6 +63,12 @@ function ProductDetails() {
   const [stockWarning, setStockWarning] = useState(false)
 
   const handleAddToCart = () => {
+    if (!user) {
+      // Trigger authentication prompt without false stock warning
+      addToCart(product, selectedSize || 9, { ...colors[selectedColor], hex: colorHexMap[selectedColor] })
+      return
+    }
+
     if (!selectedSize) return
     if (isMaxStockReached) {
       setStockWarning(true)
@@ -333,7 +339,7 @@ function ProductDetails() {
                 </div>
               )}
 
-              {/* CART QTY INDICATOR — always visible when item is in cart for a variant */}
+              {/* CART QTY INDICATOR */}
               {cartQty > 0 && !addedToCart && !stockWarning && (
                 <div className='p-2.5 bg-[#F4F1EA] text-gray-700 text-xs tracking-wide text-center rounded-xl font-semibold flex items-center justify-center gap-3'>
                   <span> {cartQty} of this variant already in your cart</span>
