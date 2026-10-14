@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { RiSearchLine } from 'react-icons/ri'
 import FAQ from '../Props/FAQ'
 import FadeIn from '../FadeIn'
@@ -21,6 +21,19 @@ function Allitems() {
   const dropdownRef = useRef(null)
   const debounceRef = useRef(null)
   const navigate    = useNavigate()
+  const location    = useLocation()
+
+  // SEARCH NAVIGATION
+  useEffect(() => {
+    if (!location.state?.focusSearch) return
+
+    const input = inputRef.current
+    if (!input) return
+
+   
+    input.focus({ preventScroll: true })
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [location])
 
   // FETCH ALL PRODUCTS ON MOUNT 
   useEffect(() => {

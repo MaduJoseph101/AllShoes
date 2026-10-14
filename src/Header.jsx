@@ -26,6 +26,9 @@ function Header() {
       ? 'text-white font-bold'
       : 'hover:text-[#cbcbcb] duration-75'
 
+  
+  const onShopAllPage = location.pathname === '/all'
+
   return (
     <>
         {/* DESKTOP HEADER */}
@@ -42,7 +45,7 @@ function Header() {
             </div>
 
             <div className=' flex gap-3 lg:gap-5 items-center'>
-                <Link to="/all" className=' text-lg lg:text-[1.1rem] font-bold' aria-label='search button'><RiSearchLine/></Link>
+                <Link to="/all" state={{ focusSearch: true }} replace={onShopAllPage} className=' text-lg lg:text-[1.1rem] font-bold' aria-label='search button'><RiSearchLine/></Link>
                 
                 {/* CART */}
                 <button
@@ -106,7 +109,7 @@ function Header() {
             <span className='text-base font-bold font-jakarta'>AllShoes</span>
 
             <div className=' flex gap-4 items-center'>
-                <Link to="/all" className=' text-lg font-bold'><RiSearchLine /></Link>
+                <Link to="/all" state={{ focusSearch: true }} replace={onShopAllPage} className=' text-lg font-bold' aria-label='search button'><RiSearchLine /></Link>
                 <Link to="/saved" className={`relative text-lg font-bold ${location.pathname === '/saved' ? 'text-white font-bold' : ''}`} aria-label='saved items'>
                   <FiHeart />
                   {savedCount > 0 && (
