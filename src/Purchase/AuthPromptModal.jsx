@@ -19,7 +19,7 @@ function AuthPromptModal() {
 
       {/* MODAL CARD */}
       <div className='relative bg-[#ECE9E2] rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-gray-300 z-10 p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-200'>
-        
+
         {/* CLOSE BUTTON */}
         <button
           onClick={closeAuthPrompt}
@@ -32,7 +32,7 @@ function AuthPromptModal() {
         {/* HEADER ICON & TITLE */}
         <div className='text-center space-y-3 pt-2'>
           <div className='w-14 h-14 bg-[#212121] text-white rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-md'>
-            {isCart ? <FiShoppingBag /> : <FiHeart className='text-red-400' />}
+            {isCart ? <FiShoppingBag /> : <FiHeart className='text-white' />}
           </div>
           <div>
           
