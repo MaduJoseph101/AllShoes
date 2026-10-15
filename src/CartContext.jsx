@@ -9,7 +9,6 @@ const LEGACY_WISHLIST_KEY = 'allshoes_wishlist'
 const LEGACY_USER_KEY = 'allshoes_user'
 
 // USER DATABASE (LOCAL STORAGE SIMULATION)
-
 function loadUsersDb() {
   try {
     const raw = localStorage.getItem(USERS_DB_KEY)

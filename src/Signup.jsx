@@ -509,7 +509,7 @@ function Signup() {
                     </p>
                   </div>
 
-                  <div className='bg-gray-50 rounded-2xl text-justify p-3 flex items-start gap-2.5 text-[11px] text-gray-600 border border-gray-200/50'>
+                  <div className='bg-gray-50 rounded-2xl p-3 flex items-start gap-2.5 text-[11px] text-gray-600 border border-gray-200/50'>
                     <span>
                       When you proceed to checkout, these shipping details will automatically prefill Step 1 for instant checkout.
                     </span>
