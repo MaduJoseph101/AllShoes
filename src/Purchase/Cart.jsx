@@ -116,7 +116,7 @@ function Cart() {
             <FiArrowLeft className='text-xs' />
             Continue Shopping
           </Link>
-          <h1 className='text-lg sm:text-[1rem] font-extrabold flex gap-2 text-gray-950 tracking-tight uppercase'>
+          <h1 className='text-[14px] sm:text-[1rem] font-extrabold flex gap-2 text-gray-950 tracking-tight uppercase'>
             Cart <span className='text-gray-400 font-bold'>({itemCount})</span>
           </h1>
         </div>
