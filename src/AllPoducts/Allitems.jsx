@@ -87,7 +87,7 @@ function Allitems() {
     return () => clearTimeout(debounceRef.current)
   }, [query])
 
-  // CLOSE DROPDOWN WHEN USER CLICKS OUTSIDE 
+  // CLOSE DROPDOWN 
   useEffect(() => {
     const handleClick = (e) => {
       if (
@@ -283,13 +283,6 @@ function Allitems() {
             </div>
           )}
         </div>
-
-        {/* PRODUCT COUNT LABEL */}
-        {!loading && !error && (
-          <p className='text-xs text-gray-500 font-semibold uppercase tracking-wider px-1'>
-            {products.length} Products
-          </p>
-        )}
 
         {/* PRODUCT GRID */}
         <div>
