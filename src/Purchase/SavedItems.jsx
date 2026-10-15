@@ -107,7 +107,7 @@ function SavedItems() {
                 </div>
 
                 <div className='flex flex-wrap items-center justify-between mt-3 gap-2'>
-                  <span className='text-base font-extrabold text-gray-950'>
+                  <span className='text-[14px] font-extrabold text-gray-950'>
                     {currencyFormatter.format(item.price)}
                   </span>
 
