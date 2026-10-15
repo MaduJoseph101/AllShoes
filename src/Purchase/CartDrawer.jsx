@@ -32,7 +32,7 @@ function CartDrawer() {
         onClick={closeDrawer}
       />
 
-      <div className='fixed inset-y-0 right-0 max-w-full flex pl-10'>
+      <div className='fixed inset-y-0 right-0 max-w-full flex pl-12'>
         <div className='w-screen max-w-md bg-[#ECE9E2] shadow-2xl flex flex-col'>
           
           {/* DRAWER HEADER */}

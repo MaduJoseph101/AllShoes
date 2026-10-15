@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../CartContext'
 import { FiHeart, FiTrash2, FiArrowLeft, FiShoppingBag } from 'react-icons/fi'
@@ -63,9 +64,66 @@ function SavedItems() {
         {/* RESPONSIVE GRID */}
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6'>
           {wishlistItems.map((item) => (
+            <Fragment key={item.id}>
+
+            {/* MOBILE */}
+            <div className='sm:hidden bg-white rounded-3xl p-4 flex gap-4 shadow-sm border border-gray-200/70'>
+              {/* THUMBNAIL */}
+              <Link to={`/productdetails/${item.id}`} className='flex-shrink-0'>
+                <div className='w-20 h-20 bg-[#F4F1EA] rounded-2xl flex items-center justify-center overflow-hidden'>
+                  <img
+                    src={item.thumbnail}
+                    alt={item.title}
+                    className='w-full h-full object-contain p-1.5'
+                  />
+                </div>
+              </Link>
+
+              {/* DETAILS */}
+              <div className='flex-1 min-w-0 flex flex-col justify-between'>
+                <div>
+                  <div className='flex items-start justify-between gap-2'>
+                    <Link
+                      to={`/productdetails/${item.id}`}
+                      className='text-sm font-bold text-gray-950 tracking-tight line-clamp-2 hover:underline'
+                    >
+                      {item.title}
+                    </Link>
+                    <button
+                      onClick={() => toggleWishlist(item)}
+                      className='text-red-500 hover:bg-red-500 hover:text-white transition-colors p-1 rounded-full cursor-pointer flex-shrink-0'
+                      title='Remove from saved'
+                      aria-label='Remove from saved'
+                    >
+                      <FaHeart className='text-xs' />
+                    </button>
+                  </div>
+
+                  <div className='flex items-center gap-2 mt-1.5'>
+                    <span className='text-[10px] font-semibold uppercase tracking-wider text-gray-500 bg-[#F4F1EA] px-2 py-0.5 rounded-md'>
+                      {item.brand || 'AllShoes'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className='flex flex-wrap items-center justify-between mt-3 gap-2'>
+                  <span className='text-base font-extrabold text-gray-950'>
+                    {currencyFormatter.format(item.price)}
+                  </span>
+
+                  <Link
+                    to={`/productdetails/${item.id}`}
+                    className='ml-auto flex items-center gap-1.5 bg-[#212121] text-white text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full hover:bg-black transition-all cursor-pointer shadow-xs whitespace-nowrap'
+                  >
+                    <FiShoppingBag className='text-xs' /> Add to cart
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/*TABLET & DESKTOP*/}
             <div
-              key={item.id}
-              className='bg-white rounded-3xl p-5 border border-gray-200/70 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group relative'
+              className='hidden sm:flex bg-white rounded-3xl p-5 border border-gray-200/70 shadow-sm hover:shadow-md transition-all duration-300 flex-col justify-between group relative'
             >
               {/* REMOVE BUTTON */}
               <button
@@ -117,6 +175,8 @@ function SavedItems() {
                 </Link>
               </div>
             </div>
+
+            </Fragment>
           ))}
         </div>
 
