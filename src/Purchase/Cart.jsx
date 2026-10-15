@@ -365,7 +365,7 @@ function Cart() {
         {recommendations.length > 0 && (
           <div className='pt-12 border-t border-gray-300/60 space-y-6'>
             <div className='flex items-center justify-between'>
-              <h2 className='text-lg sm:text-[1.1rem] font-extrabold text-gray-950 uppercase tracking-wide'>
+              <h2 className='text-[14px] sm:text-[1.1rem] font-extrabold text-gray-950 uppercase tracking-wide'>
                 You May Also Like
               </h2>
               <Link to='/all' className='text-xs font-bold uppercase tracking-wider text-gray-600 hover:text-black underline'>
