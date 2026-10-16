@@ -15,8 +15,6 @@ import {
   FiEdit3,
   FiShoppingBag,
   FiArrowRight,
-  FiShield,
-  FiTruck,
   FiHeart,
   FiX,
   FiLogOut,
@@ -250,13 +248,13 @@ function Signup() {
               <div
                 className={`fixed top-20 right-4 z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
                   notification.type === 'success'
-                    ? 'bg-emerald-950 text-emerald-100 border-emerald-800'
+                    ? 'bg-[#212121] text-white border-neutral-700'
                     : 'bg-red-950 text-red-100 border-red-800'
                 }`}
               >
                 <div className='flex items-center gap-2.5 text-xs font-semibold'>
                   {notification.type === 'success' ? (
-                    <FiCheckCircle className='text-base shrink-0 text-emerald-400' />
+                    <FiCheckCircle className='text-base shrink-0 text-white' />
                   ) : (
                     <FiAlertCircle className='text-base shrink-0 text-red-400' />
                   )}
@@ -475,9 +473,9 @@ function Signup() {
               {/* SHIPPING INFORMATION CARD */}
               <div className='bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm flex flex-col justify-between'>
                 <div className='space-y-4'>
-                  <div className='flex items-center justify-between'>
-                    <h3 className='text-xs font-extrabold uppercase tracking-wider text-gray-900 flex items-center gap-2'>
-                      <FiTruck className='text-sm' /> Default Shipping Address
+                  <div className='flex items-center justify-center'>
+                    <h3 className='text-xs font-extrabold uppercase tracking-wider text-gray-900'>
+                       Shipping Address
                     </h3>
                    
                   </div>
@@ -509,84 +507,62 @@ function Signup() {
                     </p>
                   </div>
 
-                  <div className='bg-gray-50 rounded-2xl p-3 flex items-start gap-2.5 text-[11px] text-gray-600 border border-gray-200/50'>
+                  <div className='rounded-2xl p-3 flex items-start gap-2.5 text-[11px] text-black'>
                     <span>
                       When you proceed to checkout, these shipping details will automatically prefill Step 1 for instant checkout.
                     </span>
                   </div>
                 </div>
 
-                <div className='pt-6'>
-                  <button
-                    onClick={openCheckout}
-                    className='w-full inline-flex items-center justify-center gap-2 bg-[#212121] text-white hover:bg-black font-bold text-xs uppercase tracking-wider py-4.5 rounded-full transition-all cursor-pointer shadow-sm hover:scale-[1.01] active:scale-[0.99]'
-                  >
-                    <FiShoppingBag />
-                    Test Checkout Autofill
-                  </button>
-                </div>
               </div>
 
               {/* ACCOUNT PREFERENCES / TIED CART & SAVED OVERVIEW */}
-              <div className='bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm flex flex-col justify-between space-y-6'>
+              <div className='bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm flex flex-col justify-between'>
                 <div className='space-y-4'>
-                  <h3 className='text-xs font-extrabold uppercase tracking-wider text-gray-900 flex items-center gap-2'>
-                    <FiShield className='text-sm' /> Account Overview
-                  </h3>
+                  {/* <div className='flex items-center justify-center'>
+                    <h3 className='text-xs font-extrabold uppercase tracking-wider text-gray-900'>
+                      Account Overview
+                    </h3>
+                  </div> */}
 
-                  <div className='space-y-2.5 text-xs'>
-                    <div className='flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 border border-gray-200/60'>
-                      <div className='flex items-center gap-2'>
-                        <FiShoppingBag className='text-gray-500' />
-                        <span className='font-semibold text-gray-700'>Personal Cart</span>
-                      </div>
-                      <span className='font-bold text-gray-950 bg-white px-2.5 py-1 rounded-xl border border-gray-200'>
-                        {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
-                      </span>
-                    </div>
+                  <div className='space-y-3 text-xs'>
 
-                    <div className='flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 border border-gray-200/60'>
-                      <div className='flex items-center gap-2'>
-                        <FiHeart className='text-red-500' />
-                        <span className='font-semibold text-gray-700'>Saved Wishlist</span>
-                      </div>
-                      <span className='font-bold text-gray-950 bg-white px-2.5 py-1 rounded-xl border border-gray-200'>
-                        {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'}
-                      </span>
-                    </div>
+                    <Link to='/cart' className='flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 border border-gray-200/60 hover:scale-[1.01] transition-all duration-100 ease-linear' >
+                          <div className='flex items-center gap-2'>
+                          <FiShoppingBag className='text-gray-500' />
+                          <span className='font-semibold text-gray-700'> Cart</span>
+                        </div>
+                        <span className='font-bold text-gray-950 bg-white px-2.5 py-1 rounded-xl border border-gray-200'>
+                          {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+                        </span>
+                      </Link>
 
-                    <div className='flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 border border-gray-200/60'>
-                      <span className='font-semibold text-gray-700'>Checkout Express</span>
-                      <span className='text-[10px] font-bold text-emerald-700 uppercase bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200'>
-                        Active
-                      </span>
-                    </div>
+                  
+                      <Link to='/saved' className='flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 border border-gray-200/60 hover:scale-[1.01] transition-all duration-100 ease-linear' >
+                          <div className='flex items-center gap-2'>
+                          <FiHeart className='text-red-500' />
+                          <span className='font-semibold text-gray-700'> Wishlist</span>
+                        </div>
+                        <span className='font-bold text-gray-950 bg-white px-2.5 py-1 rounded-xl border border-gray-200'>
+                          {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'}
+                        </span>
+                      </Link>
+
+                      <Link to='/saved' className='flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 border border-gray-200/60 hover:scale-[1.01] transition-all duration-100 ease-linear' >
+                          <div className='flex items-center gap-2'>
+                           <FiShoppingBag className='text-gray-500' />
+
+                          <span className='font-semibold text-gray-700'> Browse Catalog</span>
+                        </div>
+
+                        <FiArrowRight/>
+                       
+                      </Link>
                   </div>
                 </div>
-
-                <div className='space-y-2 sm:space-y-3 pt-2'>
-                  <Link
-                    to='/saved'
-                    className='w-full inline-flex items-center justify-between bg-[#ECE9E2]/70 hover:bg-[#ECE9E2] text-gray-900 font-bold text-xs uppercase tracking-wider px-5 py-4.5 rounded-full transition-colors'
-                  >
-                    <span className='flex items-center gap-2'>
-                      <FiHeart className='text-red-500' />
-                      View Saved Wishlist
-                    </span>
-                    <FiArrowRight />
-                  </Link>
-                  <Link
-                    to='/all'
-                    className='w-full inline-flex items-center justify-between bg-[#ECE9E2]/70 hover:bg-[#ECE9E2] text-gray-900 font-bold text-xs uppercase tracking-wider px-5 py-4.5 rounded-full transition-colors'
-                  >
-                    <span className='flex items-center gap-2'>
-                      <FiShoppingBag />
-                      Browse Catalog
-                    </span>
-                    <FiArrowRight />
-                  </Link>
-                </div>
               </div>
+              
+              
             </div>
 
           </div>
@@ -604,15 +580,15 @@ function Signup() {
           {/* FLOATING TOAST NOTIFICATION */}
           {notification && (
             <div
-              className={`p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
+              className={`fixed top-20 right-4 z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
                 notification.type === 'success'
-                  ? 'bg-emerald-950 text-emerald-100 border-emerald-800'
+                  ? 'bg-[#212121] text-white border-neutral-700'
                   : 'bg-red-950 text-red-100 border-red-800'
               }`}
             >
               <div className='flex items-center gap-2.5 text-xs font-semibold'>
                 {notification.type === 'success' ? (
-                  <FiCheckCircle className='text-base shrink-0 text-emerald-400' />
+                  <FiCheckCircle className='text-base shrink-0 text-white' />
                 ) : (
                   <FiAlertCircle className='text-base shrink-0 text-red-400' />
                 )}
@@ -638,11 +614,7 @@ function Signup() {
                   <h1 className='text-base lg:text-lg font-black text-gray-950 uppercase tracking-tight leading-tight'>
                     {authMode === 'signup' ? 'Create an Account' : 'Welcome Back'}
                   </h1>
-                  <p className='text-[11px] text-gray-500 hidden sm:block'>
-                    {authMode === 'signup'
-                      ? 'Register to tie your cart and enable 1-click checkout autofill.'
-                      : 'Sign in to access your saved cart and checkout details.'}
-                  </p>
+                  
                 </div>
               </div>
 

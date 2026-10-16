@@ -115,7 +115,7 @@ function SavedItems() {
                     to={`/productdetails/${item.id}`}
                     className='ml-auto flex items-center gap-1.5 bg-[#212121] text-white text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full hover:bg-black transition-all cursor-pointer shadow-xs whitespace-nowrap'
                   >
-                    <FiShoppingBag className='text-xs' /> Add to cart
+                    Add to cart
                   </Link>
                 </div>
               </div>
@@ -148,7 +148,7 @@ function SavedItems() {
 
               {/* DETAILS */}
               <div className='space-y-3 px-1 flex-1 flex flex-col justify-between'>
-                <div className=' flex flex-col gap-1'>
+                <div className=' flex flex-col gap-2'>
                   <p className='text-[10px] font-bold text-gray-400 uppercase tracking-widest'>
                     {item.brand || 'AllShoes'}
                   </p>
@@ -169,9 +169,9 @@ function SavedItems() {
                 {/* VIEW & CHOOSE SIZE ACTION */}
                 <Link
                   to={`/productdetails/${item.id}`}
-                  className='w-full py-3 bg-[#212121] text-white text-xs font-bold uppercase tracking-wider rounded-full hover:bg-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs text-center'
+                  className='w-full py-3 bg-[#212121] text-white text-xs font-bold uppercase tracking-wider rounded-full hover:bg-black transition-all flex items-center justify-center gap-cursor-pointer shadow-xs text-center'
                 >
-                  <FiShoppingBag className='text-xs' /> Add to cart
+                  Add to cart
                 </Link>
               </div>
             </div>

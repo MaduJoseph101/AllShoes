@@ -167,7 +167,7 @@ function CheckoutModal() {
             <div className='space-y-4'>
               <div className='flex items-center justify-between'>
                 <h3 className='text-sm px-1 font-extrabold uppercase tracking-wider text-gray-900 flex items-center gap-2'>
-                  <FiTruck /> Shipping Details
+                  Shipping Details
                 </h3>
             
               </div>
@@ -307,7 +307,7 @@ function CheckoutModal() {
           {step === 2 && (
             <div className='space-y-4'>
               <h3 className='text-sm font-extrabold uppercase tracking-wider text-gray-900 flex items-center gap-2'>
-                <FiCreditCard /> Select Payment Method
+                Select Payment Method
               </h3>
 
               <div className='grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3'>

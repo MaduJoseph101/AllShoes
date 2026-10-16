@@ -319,7 +319,7 @@ function Allitems() {
                   <div className='relative bg-white rounded-2xl sm:rounded-3xl overflow-hidden p-3 sm:p-4 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full'>
 
                     {/* Badge */}
-                    <span className='absolute top-3 left-3 bg-[#212121] text-white text-[9px] sm:text-[10px] uppercase tracking-widest font-bold px-2.5 py-0.5 rounded-full z-10'>
+                    <span className='absolute top-3 left-3 text-black text-[9px] sm:text-[10px] uppercase tracking-widest font-extrabold px-2.5 py-0.5 rounded-full z-10'>
                       New
                     </span>
 
@@ -335,11 +335,11 @@ function Allitems() {
 
                     {/* Details */}
                     <div className='mt-2 sm:mt-4 pt-2 border-t border-gray-100 flex flex-col gap-1.5'>
-                      <h3 className='font-bold text-xs sm:text-sm text-gray-900 line-clamp-1 group-hover:text-black transition-colors uppercase tracking-wide'>
+                      <h3 className='font-bold text-xs sm:text-sm text-gray-900 line-clamp-1 group-hover:text-black transition-colors'>
                         {product.title}
                       </h3>
                       <p className='text-[10px] sm:text-xs text-gray-500 line-clamp-1 capitalize'>
-                        {product.brand || product.category}
+                        {product.description}
                       </p>
                       <div className='flex items-center justify-between mt-1 pt-1'>
                         <span className='font-extrabold text-xs sm:text-sm text-gray-900'>
