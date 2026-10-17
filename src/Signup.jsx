@@ -246,7 +246,7 @@ function Signup() {
             {/* FLOATING TOAST NOTIFICATION */}
             {notification && (
               <div
-                className={`fixed top-20 right-4 z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
+                className={`fixed top-20 left-1/2 right-auto -translate-x-1/2 w-[calc(100%-2rem)] sm:left-auto sm:right-4 sm:translate-x-0 sm:w-auto z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
                   notification.type === 'success'
                     ? 'bg-[#212121] text-white border-neutral-700'
                     : 'bg-red-950 text-red-100 border-red-800'
@@ -318,11 +318,11 @@ function Signup() {
             {showDeleteConfirm && (
               <div className='fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4'>
                 <div className='bg-[#ECE9E2] border border-gray-300 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 text-center animate-in fade-in zoom-in-95 duration-200'>
-                  <div className='w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-xs'>
+                  {/* <div className='w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-xs'>
                     <FiTrash2 />
-                  </div>
+                  </div> */}
                   <div className='space-y-2'>
-                    <h3 className='text-xl font-black text-gray-950 uppercase tracking-tight'>
+                    <h3 className='text-xl font-black text-gray-950 uppercase tracking-wide'>
                       Delete Account
                     </h3>
                     <p className='text-xs text-gray-600 leading-relaxed'>
@@ -330,7 +330,7 @@ function Signup() {
                       saved profile, default shipping address, and your personal cart and wishlist.
                     </p>
                   </div>
-                  <div className='flex items-center justify-center gap-3 pt-2'>
+                  <div className='flex items-center justify-center gap-4 pt-2'>
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
                       className='bg-white text-gray-800 font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-full hover:bg-gray-100 transition-colors border border-gray-300 cursor-pointer'
@@ -580,7 +580,7 @@ function Signup() {
           {/* FLOATING TOAST NOTIFICATION */}
           {notification && (
             <div
-              className={`fixed top-20 right-4 z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
+              className={`fixed top-20 left-1/2 right-auto -translate-x-1/2 w-[calc(100%-2rem)] sm:left-auto sm:right-4 sm:translate-x-0 sm:w-auto z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
                 notification.type === 'success'
                   ? 'bg-[#212121] text-white border-neutral-700'
                   : 'bg-red-950 text-red-100 border-red-800'

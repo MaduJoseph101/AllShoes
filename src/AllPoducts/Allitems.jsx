@@ -339,7 +339,7 @@ function Allitems() {
                         {product.title}
                       </h3>
                       <p className='text-[10px] sm:text-xs text-gray-500 line-clamp-1 capitalize'>
-                        {product.description}
+                        {product.description  }
                       </p>
                       <div className='flex items-center justify-between mt-1 pt-1'>
                         <span className='font-extrabold text-xs sm:text-sm text-gray-900'>

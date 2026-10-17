@@ -331,9 +331,9 @@ function BestSellers() {
               <Link to={`/all`} className='block h-full group'>
                 <div className='relative bg-[#F7F5F0] border border-[#E6E1D7] rounded-3xl overflow-hidden flex flex-col h-full transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-black/30'>
 
-                  <span className='absolute top-4 left-4 bg-black text-white text-[10px] uppercase tracking-widest font-jakarta font-bold px-3 py-1 rounded-full z-10 shadow-sm'>
-                    New
-                  </span>
+                   <span className='absolute top-3 left-3 text-black text-[9px] sm:text-[10px] uppercase tracking-widest font-extrabold px-2.5 py-0.5 rounded-full z-10'>
+                      New
+                    </span>
 
                   <div className='relative flex items-center justify-center p-6 bg-[#EFECE6]/70 overflow-hidden min-h-[200px]'>
                     <img
