@@ -19,13 +19,14 @@ function Footer() {
         {/* LEFT SECTION LINKS */}
         <div className='lg:col-span-5 flex flex-col justify-between space-y-10'>
           <div>
-            <h3 className='text-xs sm:text-sm font-semibold tracking-wider uppercase mb-4 text-white'>
+            <h2 className='text-xs sm:text-sm font-semibold tracking-wider uppercase mb-4 text-white'>
               SUBSCRIBE TO OUR EMAILS
-            </h3>
+            </h2>
             <form onSubmit={handleSignupSubmit} className='bg-white rounded-2xl flex items-center px-4 py-3.5 max-w-md w-full shadow-sm'>
               <input
                 type='email'
                 placeholder='Email Address'
+                aria-label='Email address for newsletter'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className='bg-transparent outline-none text-black text-xs sm:text-sm flex-1 pr-2 placeholder-gray-500'
@@ -40,8 +41,8 @@ function Footer() {
           </div>
 
           <div>
-            <h3 className='text-xs sm:text-sm  font-semibold tracking-wider uppercase mb-4 text-white'>
-              FOLLOW US</h3>
+            <h2 className='text-xs sm:text-sm  font-semibold tracking-wider uppercase mb-4 text-white'>
+              FOLLOW US</h2>
             <div className='flex items-center gap-3 flex-wrap'>
               <Link to="" className='w-9 h-9 sm:w-11 sm:h-11 rounded-full border border-white/80 flex items-center justify-center text-base text-white hover:bg-white hover:text-[#000000] transition-all duration-200' aria-label="Instagram">
                 <FaInstagram className='text-[1rem] sm:text-[1.3rem]' />
@@ -70,9 +71,9 @@ function Footer() {
           
           {/* HELP COLUMN */}
           <div>
-            <h3 className='font-semibold tracking-wider uppercase mb-4 text-white text-xs sm:text-sm'>
+            <h2 className='font-semibold tracking-wider uppercase mb-4 text-white text-xs sm:text-sm'>
               HELP
-            </h3>
+            </h2>
             <ul className='space-y-2.5 text-gray-300'>
               <li>
                 <a href="mailto:josephmadu774@gmail.com" className='hover:text-white transition-colors duration-150 block'>
@@ -94,9 +95,9 @@ function Footer() {
 
           {/* SHOP COLUMN */}
           <div>
-            <h3 className='font-semibold tracking-wider uppercase mb-4 text-white text-xs sm:text-sm'>
+            <h2 className='font-semibold tracking-wider uppercase mb-4 text-white text-xs sm:text-sm'>
               SHOP
-            </h3>
+            </h2>
             <ul className='space-y-2.5 text-gray-300'>
               <li>
                 <Link to="/men" className='hover:text-white transition-colors duration-150 block'>
@@ -119,9 +120,9 @@ function Footer() {
 
           {/* COMPANY COLUMN */}
           <div>
-            <h3 className='font-semibold tracking-wider uppercase mb-4 text-white text-xs sm:text-sm'>
+            <h2 className='font-semibold tracking-wider uppercase mb-4 text-white text-xs sm:text-sm'>
               COMPANY
-            </h3>
+            </h2>
             <ul className='space-y-2.5 text-gray-300'>
               <li>
                 <Link to="" className='hover:text-white transition-colors duration-150 block'>

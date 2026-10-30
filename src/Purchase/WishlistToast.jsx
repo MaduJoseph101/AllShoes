@@ -21,9 +21,9 @@ function WishlistToast() {
 
   return (
     <div className='fixed bottom-6 left-6 z-50 animate-bounce-short font-jakarta max-w-sm w-full px-4'>
-      <div className='bg-[#212121] text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-4 border border-gray-700'>
+      <div role='status' aria-live='polite' className='bg-[#212121] text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-4 border border-gray-700'>
         <div className='flex items-center gap-3 min-w-0 flex-1'>
-          <div className={`p-2 rounded-full flex-shrink-0 ${action === 'added' ? 'bg-red-500/20 text-red-500' : 'bg-gray-700 text-gray-400'}`}>
+          <div className={`p-2 rounded-full flex-shrink-0 ${action === 'added' ? 'bg-red-500/20 text-red-500' : 'bg-gray-700 text-gray-300'}`}>
             {action === 'added' ? <FaHeart className='text-sm text-red-500' /> : <FiHeart className='text-sm' />}
           </div>
 
@@ -55,7 +55,7 @@ function WishlistToast() {
           )}
           <button
             onClick={dismissWishlistToast}
-            className='text-gray-400 hover:text-white p-1 transition-colors cursor-pointer'
+            className='text-gray-300 hover:text-white p-1 transition-colors cursor-pointer'
             aria-label='Dismiss'
           >
             <FiX className='text-base' />

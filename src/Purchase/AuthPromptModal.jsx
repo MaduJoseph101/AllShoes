@@ -1,9 +1,13 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../CartContext'
 import { FiX, FiLock, FiShoppingBag, FiHeart, FiArrowRight, FiUserCheck } from 'react-icons/fi'
+import useFocusTrap from '../useFocusTrap'
 
 function AuthPromptModal() {
   const { authPrompt, closeAuthPrompt } = useCart()
+  const modalRef = useRef(null)
+  useFocusTrap(modalRef, authPrompt.isOpen, closeAuthPrompt)
 
   if (!authPrompt.isOpen) return null
 
@@ -18,12 +22,19 @@ function AuthPromptModal() {
       />
 
       {/* MODAL CARD */}
-      <div className='relative bg-[#ECE9E2] rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-gray-300 z-10 p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-200'>
+      <div
+        ref={modalRef}
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='auth-prompt-title'
+        tabIndex={-1}
+        className='relative bg-[#ECE9E2] rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-gray-300 z-10 p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-200'
+      >
 
         {/* CLOSE BUTTON */}
         <button
           onClick={closeAuthPrompt}
-          className='absolute top-5 right-5 text-gray-500 hover:text-black p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer'
+          className='absolute top-5 right-5 text-gray-700 hover:text-black p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer'
           aria-label='Close modal'
         >
           <FiX className='text-xl' />
@@ -36,7 +47,7 @@ function AuthPromptModal() {
           </div>
           <div>
           
-            <h2 className='text-xl sm:text-2xl font-black text-gray-950 uppercase tracking-tight'>
+            <h2 id='auth-prompt-title' data-dialog-initial-focus tabIndex={-1} className='text-xl sm:text-2xl font-black text-gray-950 uppercase tracking-tight'>
               {isCart ? 'Sign In to Add to Cart' : 'Sign In to Save Items'}
             </h2>
           </div>
@@ -71,7 +82,7 @@ function AuthPromptModal() {
 
           <button
             onClick={closeAuthPrompt}
-            className='w-full text-center text-xs font-bold text-gray-500 hover:text-black py-2 transition-colors cursor-pointer'
+            className='w-full text-center text-xs font-bold text-gray-700 hover:text-black py-2 transition-colors cursor-pointer'
           >
             Continue Browsing Guest
           </button>

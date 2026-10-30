@@ -1,6 +1,8 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../CartContext'
 import { FiX, FiTrash2, FiMinus, FiPlus, FiShoppingBag, FiArrowRight } from 'react-icons/fi'
+import useFocusTrap from '../useFocusTrap'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -8,6 +10,7 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 })
 
 function CartDrawer() {
+  const drawerRef = useRef(null)
   const {
     isDrawerOpen,
     closeDrawer,
@@ -18,6 +21,8 @@ function CartDrawer() {
     itemCount,
     openCheckout,
   } = useCart()
+
+  useFocusTrap(drawerRef, isDrawerOpen, closeDrawer)
 
   if (!isDrawerOpen) return null
 
@@ -33,12 +38,19 @@ function CartDrawer() {
       />
 
       <div className='fixed inset-y-0 right-0 max-w-full flex pl-12'>
-        <div className='w-screen max-w-md bg-[#ECE9E2] shadow-2xl flex flex-col'>
+        <div
+          ref={drawerRef}
+          role='dialog'
+          aria-modal='true'
+          aria-labelledby='cart-drawer-title'
+          tabIndex={-1}
+          className='w-screen max-w-md bg-[#ECE9E2] shadow-2xl flex flex-col'
+        >
           
           {/* DRAWER HEADER */}
           <div className='p-5 bg-[#212121] text-white flex items-center justify-between shadow-md'>
             <div className='flex items-center gap-2'>
-              <h2 className='text-base font-bold uppercase tracking-wider'>Your Cart</h2>
+              <h2 id='cart-drawer-title' data-dialog-initial-focus tabIndex={-1} className='text-base font-bold uppercase tracking-wider'>Your Cart</h2>
               <span className='bg-white/20 text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full'>
                 {itemCount}
               </span>
@@ -82,7 +94,7 @@ function CartDrawer() {
                 </div>
                 <div className='space-y-1'>
                   <h3 className='text-lg font-bold text-gray-900'>Your cart is empty</h3>
-                  <p className='text-xs text-gray-500 max-w-xs'>
+                  <p className='text-xs text-gray-700 max-w-xs'>
                     Looks like you haven't added anything to your cart yet.
                   </p>
                 </div>
@@ -115,21 +127,22 @@ function CartDrawer() {
                     <div className='flex-1 min-w-0 flex flex-col justify-between'>
                       <div>
                         <div className='flex items-start justify-between gap-2'>
-                          <h4 className='text-xs font-bold text-gray-900 line-clamp-1'>{item.title}</h4>
+                          <h3 className='text-xs font-bold text-gray-900 line-clamp-1'>{item.title}</h3>
                           <button
                             onClick={() => removeFromCart(item.key)}
                             className='text-gray-300 hover:text-red-500 transition-colors p-1 cursor-pointer'
                             title='Remove item'
+                            aria-label={`Remove ${item.title} from cart`}
                           >
                             <FiTrash2 className='text-xs' />
                           </button>
                         </div>
 
                         <div className='flex items-center gap-2 mt-1'>
-                          <span className='text-[10px] font-semibold text-gray-500 bg-[#F4F1EA] px-2 py-0.5 rounded-md'>
+                          <span className='text-[10px] font-semibold text-gray-700 bg-[#F4F1EA] px-2 py-0.5 rounded-md'>
                             Size {item.size}
                           </span>
-                          <span className='text-[10px] font-semibold text-gray-500 bg-[#F4F1EA] px-2 py-0.5 rounded-md flex items-center gap-1'>
+                          <span className='text-[10px] font-semibold text-gray-700 bg-[#F4F1EA] px-2 py-0.5 rounded-md flex items-center gap-1'>
                             <span
                               className='w-2 h-2 rounded-full border border-gray-300'
                               style={{ backgroundColor: item.color?.hex || '#333' }}
@@ -161,7 +174,7 @@ function CartDrawer() {
                             disabled={isMaxStock}
                             className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors text-xs ${
                               isMaxStock
-                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
                                 : 'bg-white text-gray-700 hover:bg-black hover:text-white cursor-pointer'
                             }`}
                             aria-label='Increase quantity'

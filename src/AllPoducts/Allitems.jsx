@@ -132,7 +132,7 @@ function Allitems() {
 
   // SKELETON CARDS 
   const SkeletonGrid = () => (
-    <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4'>
+    <div aria-hidden='true' className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4'>
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
@@ -168,11 +168,13 @@ function Allitems() {
           <div className='absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent flex flex-col justify-between p-6 sm:p-10 text-white'>
 
             {/* Breadcrumb */}
-            <div className='text-xs sm:text-sm font-semibold tracking-wide flex items-center gap-2 text-gray-400'>
-              <Link to='/' className='hover:underline hover:text-white transition-colors'>Home</Link>
-              <span>/</span>
-              <span className='text-white font-semibold'>Shop All</span>
-            </div>
+            <nav aria-label='Breadcrumb' className='text-xs sm:text-sm font-semibold tracking-wide text-white'>
+              <ol className='flex items-center gap-2'>
+                <li><Link to='/' className='hover:underline hover:text-white transition-colors'>Home</Link></li>
+                <li aria-hidden='true'>/</li>
+                <li aria-current='page' className='text-white font-semibold'>Shop All</li>
+              </ol>
+            </nav>
 
             {/* Headline */}
             <div className='max-w-xl space-y-2 mb-2 sm:mb-4'>
@@ -189,7 +191,7 @@ function Allitems() {
         {/* SEARCH BAR */}
         <div className='relative w-full max-w-2xl mx-auto' ref={dropdownRef}>
           <div className='relative flex items-center'>
-            <RiSearchLine className='absolute left-4 text-gray-400 text-lg pointer-events-none' />
+            <RiSearchLine className='absolute left-4 text-gray-600 text-lg pointer-events-none' />
             <input
               ref={inputRef}
               type='text'
@@ -207,7 +209,7 @@ function Allitems() {
             {query && (
               <button
                 onClick={() => { setQuery(''); setSuggestions([]); setShowDropdown(false); inputRef.current?.focus() }}
-                className='absolute right-4 text-gray-400 hover:text-gray-700 transition-colors sm:text-sm cursor-pointer'
+                className='absolute right-4 text-gray-600 hover:text-gray-700 transition-colors sm:text-sm cursor-pointer'
                 aria-label='Clear search'
               >
                 ✕
@@ -262,7 +264,7 @@ function Allitems() {
                         {/* Info */}
                         <div className='flex-1 min-w-0'>
                           <p className='text-xs font-bold text-gray-900 truncate'>{item.title}</p>
-                          <p className='text-[10px] text-gray-400 capitalize'>{item.category}</p>
+                          <p className='text-[10px] text-gray-600 capitalize'>{item.category}</p>
                         </div>
                         {/* Price */}
                         <span className='text-xs font-extrabold text-gray-900 flex-shrink-0'>
@@ -276,7 +278,7 @@ function Allitems() {
                 !searchLoading && query.trim() && (
                   <div className='px-5 py-6 text-center'>
                     <p className='text-sm font-semibold text-gray-700'>No results for "{query}"</p>
-                    <p className='text-xs text-gray-400 mt-1'>Try a different keyword</p>
+                    <p className='text-xs text-gray-600 mt-1'>Try a different keyword</p>
                   </div>
                 )
               )}
@@ -287,16 +289,19 @@ function Allitems() {
         {/* PRODUCT GRID */}
         <div>
           {loading ? (
-            <SkeletonGrid />
+            <>
+              <p role='status' aria-live='polite' className='sr-only'>Loading products…</p>
+              <SkeletonGrid />
+            </>
           ) : error ? (
             <div className='flex items-center justify-center py-12'>
               <div className='w-full max-w-lg bg-white border border-gray-200/80 rounded-3xl p-8 sm:p-10 text-center flex flex-col items-center gap-3 shadow-xs'>
-                <span className='font-jakarta text-[11px] uppercase tracking-widest text-gray-400 font-semibold'>
+                <span className='font-jakarta text-[11px] uppercase tracking-widest text-gray-600 font-semibold'>
                   Connection Error
                 </span>
-                <h3 className='font-jakarta font-extrabold text-lg sm:text-xl text-gray-950 tracking-tight'>
+                <h2 className='font-jakarta font-extrabold text-lg sm:text-xl text-gray-950 tracking-tight'>
                   Unable to load products
-                </h3>
+                </h2>
                 <p className='font-jakarta text-xs sm:text-sm text-gray-600 max-w-sm leading-relaxed'>
                   We couldn't retrieve the product list. Please check your network connection and try again.
                 </p>
@@ -335,9 +340,9 @@ function Allitems() {
 
                     {/* Details */}
                     <div className='mt-2 sm:mt-4 pt-2 border-t border-gray-100 flex flex-col gap-1.5'>
-                      <h3 className='font-bold text-xs sm:text-sm text-gray-900 line-clamp-1 group-hover:text-black transition-colors'>
+                      <h2 className='font-bold text-xs sm:text-sm text-gray-900 line-clamp-1 group-hover:text-black transition-colors'>
                         {product.title}
-                      </h3>
+                      </h2>
                       <p className='text-[10px] sm:text-xs text-gray-500 line-clamp-1 capitalize'>
                         {product.description  }
                       </p>
@@ -359,6 +364,7 @@ function Allitems() {
 
         <div className='pt-8 border-t border-gray-300/60'>
           <FAQ
+            headingLevel={2}
             title='SHOP ALL'
             description="Browse our complete range of men's and women's shoes, thoughtfully crafted for every step. Whether you're off to work, out on the trail, or heading out for the evening, find your perfect pair here, made for comfort and designed for style."
           />

@@ -34,19 +34,27 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <CartProvider>
       <BrowserRouter>
+        <a
+          href='#main-content'
+          className='sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:rounded-lg'
+        >
+          Skip to main content
+        </a>
         <ScrollToTop />
         <Header/>
-        <Routes>
-          <Route path='/' element={<Homepage/>}/>
-          <Route path='/all' element={<Allitems/>}/>
-          <Route path='/men' element={<MenItems/>}/>
-          <Route path='/women' element={<WomenItems/>}/>
-          <Route path='/signup' element={<Signup/>}/>
-          <Route path='/cart' element={<Cart/>}/>
-          <Route path='/saved' element={<SavedItems/>}/>
-          <Route path='/faq' element={<FAQ/>}/>
-          <Route path='/productdetails/:id' element={<ProductDetails/>}/>
-        </Routes>
+        <main id='main-content' tabIndex={-1}>
+          <Routes>
+            <Route path='/' element={<Homepage/>}/>
+            <Route path='/all' element={<Allitems/>}/>
+            <Route path='/men' element={<MenItems/>}/>
+            <Route path='/women' element={<WomenItems/>}/>
+            <Route path='/signup' element={<Signup/>}/>
+            <Route path='/cart' element={<Cart/>}/>
+            <Route path='/saved' element={<SavedItems/>}/>
+            <Route path='/faq' element={<FAQ/>}/>
+            <Route path='/productdetails/:id' element={<ProductDetails/>}/>
+          </Routes>
+        </main>
         <Footer/>
         <CartDrawer />
         <CheckoutModal />
@@ -57,4 +65,3 @@ createRoot(document.getElementById('root')).render(
     </CartProvider>
   </StrictMode>,
 )
-

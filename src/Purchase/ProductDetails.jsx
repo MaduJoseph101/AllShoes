@@ -42,7 +42,7 @@ function ProductDetails() {
 
   const colors = [
     { name: 'Natural Black (Classic Edition)', bg: 'bg-[#2b2b2b]', border: 'border-black' },
-    { name: 'Charcoal Gray (Limited Edition)', bg: 'bg-[#525252]', border: 'border-gray-500' },
+    { name: 'Charcoal Gray', bg: 'bg-[#525252]', border: 'border-gray-500' },
     { name: 'Blizzard White', bg: 'bg-[#f5f5f5]', border: 'border-gray-300' },
   ]
 
@@ -116,7 +116,7 @@ function ProductDetails() {
     return (
       <div className='min-h-[70vh] bg-[#ECE9E2] font-jakarta flex flex-col items-center justify-center px-4'>
         <div className='bg-white rounded-3xl p-8 max-w-md text-center space-y-4 shadow-sm'>
-          <h2 className='text-2xl font-bold text-gray-900'>Product Not Found</h2>
+          <h1 className='text-2xl font-bold text-gray-900'>Product Not Found</h1>
           <p className='text-gray-600 text-sm'>The product you are looking for does not exist or has been removed.</p>
           <Link to='/' className='inline-block bg-black text-white font-bold px-6 py-3 rounded-full text-sm hover:opacity-80 transition-opacity'>
             Back to Homepage
@@ -181,7 +181,7 @@ function ProductDetails() {
               <h1 className='text-2xl sm:text-2xl font-bold text-gray-900 tracking-wide'>
                 {product.title}
               </h1>
-              <p className='text-xs sm:text-[11px] font-semibold tracking-wider text-gray-500 uppercase'>
+              <p className='text-xs sm:text-[11px] font-semibold tracking-wider text-gray-700 uppercase'>
                 Available discount : <span className='text-green-600'>%{product.discountPercentage}</span>
                 
               </p>
@@ -197,20 +197,22 @@ function ProductDetails() {
             </div>
 
             {/* COLOUR SELECTOR */}
-            <div className='space-y-3 pt-2 border-t border-gray-100'>
+            <div className='space-y-4 pt-2 border-t border-gray-100'>
               <p className='text-xs font-semibold text-gray-700 tracking-wider uppercase'>
                 COLOR: <span className='text-gray-950 font-bold'>{colors[selectedColor].name}</span>
               </p>
               <div className='flex gap-3 pt-1'>
                 {colors.map((color, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedColor(idx)}
-                    className={`w-7 h-7 rounded-full ${color.bg} transition-transform cursor-pointer ${
-                      selectedColor === idx ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105'
-                    }`}
-                    aria-label={color.name}
-                  />
+                  <div key={idx} className='flex flex-col items-center gap-1'>
+                    <button
+                      type='button'
+                      onClick={() => setSelectedColor(idx)}
+                      className={`w-7 h-7 rounded-full ${color.bg} transition-transform cursor-pointer ${
+                        selectedColor === idx ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105'
+                      }`}
+                      aria-pressed={selectedColor === idx}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -280,11 +282,8 @@ function ProductDetails() {
                 })}
               </div>
 
-              <div className='text-xs tracking-wide text-gray-500 space-y-2 pt-1'>
+              <div className='text-xs tracking-wide text-gray-700 space-y-2 pt-1'>
                 <p>The {product.title} fits true-to-size for most customers.</p>
-                <button className='underline font-semibold text-gray-800 hover:text-black cursor-pointer'>
-                  Fit Guide
-                </button>
               </div>
             </div>
 
@@ -358,14 +357,14 @@ function ProductDetails() {
                 </div>
               )}
 
-              <p className='text-center text-xs text-gray-500 mt-3'>
+              <p className='text-center text-xs text-gray-700 mt-3'>
                 Free Shipping on Orders over $100
               </p>
             </div>
 
             {/* PRODUCT SPECS*/}
             <div className='pt-4 border-t border-gray-100 space-y-3 text-xs text-gray-700'>
-              <h4 className='font-bold text-gray-950 uppercase tracking-wider'>Product Details</h4>
+              <h2 className='font-bold text-gray-950 uppercase tracking-wider'>Product Details</h2>
               <p className='leading-relaxed text-justify'>{product.description}</p>
               
               <div className='grid grid-cols-2 gap-2 pt-3 text-gray-600'>
@@ -385,9 +384,9 @@ function ProductDetails() {
         {/* CUSTOMER REVIEWS*/}
         {product.reviews && product.reviews.length > 0 && (
           <div className='bg-white rounded-3xl p-6 sm:p-8 space-y-6 mb-5 sm:mb-10 shadow-sm border border-gray-200/70'>
-            <h3 className='text-lg font-bold text-gray-950 uppercase tracking-wider'>
+            <h2 className='text-lg font-bold text-gray-950 uppercase tracking-wider'>
               Customer Reviews ({product.reviews.length})
-            </h3>
+            </h2>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
               {product.reviews.map((rev, idx) => (
                 <div key={idx} className='p-4 bg-[#F4F1EA]/60 rounded-2xl space-y-2 border border-gray-200/60'>
@@ -396,7 +395,7 @@ function ProductDetails() {
                     <span className='text-xs text-amber-500 font-bold'>★ {rev.rating}</span>
                   </div>
                   <p className='text-xs text-gray-700 italic'>"{rev.comment}"</p>
-                  <p className='text-[10px] text-gray-400'>{new Date(rev.date).toLocaleDateString()}</p>
+                  <p className='text-[10px] text-gray-600'>{new Date(rev.date).toLocaleDateString()}</p>
                 </div>
               ))}
             </div>

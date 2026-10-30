@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useCart } from '../CartContext'
 import { FiX, FiCheckCircle, FiCreditCard, FiTruck, FiArrowRight, FiArrowLeft, FiUser } from 'react-icons/fi'
+import useFocusTrap from '../useFocusTrap'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -9,6 +10,8 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 
 function CheckoutModal() {
   const { isCheckoutOpen, closeCheckout, subtotal, clearCart, user } = useCart()
+  const modalRef = useRef(null)
+  useFocusTrap(modalRef, isCheckoutOpen, closeCheckout)
   const [step, setStep] = useState(1) // 1: Shipping, 2: Payment, 3: Confirmation
 
   // FORM STATES
@@ -119,16 +122,23 @@ function CheckoutModal() {
       <div className='fixed inset-0 bg-black/60 backdrop-blur-xs' onClick={handleClose} />
 
       {/* MODAL BOX */}
-      <div className='relative bg-[#ECE9E2] rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-gray-300 z-10 max-h-[80vh] flex flex-col sm:my-0 sm:h-[90vh]'>
+      <div
+        ref={modalRef}
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='checkout-modal-title'
+        tabIndex={-1}
+        className='relative bg-[#ECE9E2] rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-gray-300 z-10 max-h-[80vh] flex flex-col sm:my-0 sm:h-[90vh]'
+      >
         
         {/* HEADER */}
         <div className='bg-[#212121] text-white p-6 flex items-center justify-between sm:shrink-0'>
           <div>
-            <h2 className='text-lg font-extrabold uppercase tracking-wide'>
+            <h2 id='checkout-modal-title' data-dialog-initial-focus tabIndex={-1} className='text-lg font-extrabold uppercase tracking-wide'>
               {step === 3 ? 'Order Confirmed!' : 'Checkout'}
             </h2>
             {step < 3 && (
-              <p className='text-xs text-gray-400 font-semibold'>
+              <p className='text-xs text-gray-300 font-semibold'>
                 Step {step} of 3 — {step === 1 ? 'Shipping Address' : 'Payment Details'}
               </p>
 
@@ -136,7 +146,8 @@ function CheckoutModal() {
           </div>
           <button
             onClick={handleClose}
-            className='text-gray-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer'
+            className='text-gray-300 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer'
+            aria-label='Close checkout'
           >
             <FiX className='text-xl' />
           </button>
@@ -199,9 +210,11 @@ function CheckoutModal() {
                     value={formData.fullName}
                     onChange={handleInputChange}
                     placeholder='John Doe'
+                    aria-describedby={errors.fullName ? 'checkout-fullName-error' : undefined}
+                    aria-invalid={Boolean(errors.fullName)}
                     className={`w-full bg-white border ${errors.fullName ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
                   />
-                  {errors.fullName && <p className='text-[10px] text-red-500 font-semibold mt-1'>{errors.fullName}</p>}
+                  {errors.fullName && <p id='checkout-fullName-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.fullName}</p>}
                 </div>
 
                 <div>
@@ -216,9 +229,11 @@ function CheckoutModal() {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder='john@example.com'
+                    aria-describedby={errors.email ? 'checkout-email-error' : undefined}
+                    aria-invalid={Boolean(errors.email)}
                     className={`w-full bg-white border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
                   />
-                  {errors.email && <p className='text-[10px] text-red-500 font-semibold mt-1'>{errors.email}</p>}
+                  {errors.email && <p id='checkout-email-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.email}</p>}
                 </div>
 
                 <div className='sm:col-span-2'>
@@ -232,9 +247,11 @@ function CheckoutModal() {
                     value={formData.address}
                     onChange={handleInputChange}
                     placeholder='123 Main St, Apt 4B'
+                    aria-describedby={errors.address ? 'checkout-address-error' : undefined}
+                    aria-invalid={Boolean(errors.address)}
                     className={`w-full bg-white border ${errors.address ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
                   />
-                  {errors.address && <p className='text-[10px] text-red-500 font-semibold mt-1'>{errors.address}</p>}
+                  {errors.address && <p id='checkout-address-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.address}</p>}
                 </div>
 
                 <div>
@@ -248,9 +265,11 @@ function CheckoutModal() {
                     value={formData.city}
                     onChange={handleInputChange}
                     placeholder='New York'
+                    aria-describedby={errors.city ? 'checkout-city-error' : undefined}
+                    aria-invalid={Boolean(errors.city)}
                     className={`w-full bg-white border ${errors.city ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
                   />
-                  {errors.city && <p className='text-[10px] text-red-500 font-semibold mt-1'>{errors.city}</p>}
+                  {errors.city && <p id='checkout-city-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.city}</p>}
                 </div>
 
                 <div>
@@ -264,9 +283,11 @@ function CheckoutModal() {
                     value={formData.zip}
                     onChange={handleInputChange}
                     placeholder='10001'
+                    aria-describedby={errors.zip ? 'checkout-zip-error' : undefined}
+                    aria-invalid={Boolean(errors.zip)}
                     className={`w-full bg-white border ${errors.zip ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
                   />
-                  {errors.zip && <p className='text-[10px] text-red-500 font-semibold mt-1'>{errors.zip}</p>}
+                  {errors.zip && <p id='checkout-zip-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.zip}</p>}
                 </div>
 
                 <div className='sm:col-span-2'>
@@ -343,9 +364,11 @@ function CheckoutModal() {
                       onChange={handleInputChange}
                       placeholder='4532 •••• •••• 8921'
                       maxLength={19}
+                      aria-describedby={errors.cardNumber ? 'checkout-cardNumber-error' : undefined}
+                      aria-invalid={Boolean(errors.cardNumber)}
                       className={`w-full bg-[#F4F1EA] border ${errors.cardNumber ? 'border-red-500' : 'border-transparent'} rounded-xl px-4 py-2.5 text-xs outline-none focus:border-black`}
                     />
-                    {errors.cardNumber && <p className='text-[10px] text-red-500 font-semibold mt-1'>{errors.cardNumber}</p>}
+                    {errors.cardNumber && <p id='checkout-cardNumber-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.cardNumber}</p>}
                   </div>
 
                   <div className='grid grid-cols-2 gap-3'>
@@ -361,9 +384,11 @@ function CheckoutModal() {
                         onChange={handleInputChange}
                         placeholder='12/28'
                         maxLength={5}
+                        aria-describedby={errors.cardExpiry ? 'checkout-cardExpiry-error' : undefined}
+                        aria-invalid={Boolean(errors.cardExpiry)}
                         className={`w-full bg-[#F4F1EA] border ${errors.cardExpiry ? 'border-red-500' : 'border-transparent'} rounded-xl px-4 py-2.5 text-xs outline-none focus:border-black`}
                       />
-                      {errors.cardExpiry && <p className='text-[10px] text-red-500 font-semibold mt-1'>{errors.cardExpiry}</p>}
+                      {errors.cardExpiry && <p id='checkout-cardExpiry-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.cardExpiry}</p>}
                     </div>
 
                     <div>
@@ -378,9 +403,11 @@ function CheckoutModal() {
                         onChange={handleInputChange}
                         placeholder='382'
                         maxLength={4}
+                        aria-describedby={errors.cardCvc ? 'checkout-cardCvc-error' : undefined}
+                        aria-invalid={Boolean(errors.cardCvc)}
                         className={`w-full bg-[#F4F1EA] border ${errors.cardCvc ? 'border-red-500' : 'border-transparent'} rounded-xl px-4 py-2.5 text-xs outline-none focus:border-black`}
                       />
-                      {errors.cardCvc && <p className='text-[10px] text-red-500 font-semibold mt-1'>{errors.cardCvc}</p>}
+                      {errors.cardCvc && <p id='checkout-cardCvc-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.cardCvc}</p>}
                     </div>
                   </div>
                 </div>

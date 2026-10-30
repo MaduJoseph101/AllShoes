@@ -120,8 +120,10 @@ function BestSellers() {
         </div>
       </div>
 
+      <p role='status' aria-live='polite' className='sr-only'>Loading products…</p>
+
       {/* SKELETON CARDS */}
-      <div className='overflow-hidden pt-6 pb-6 mt-4 w-full'>
+      <div aria-hidden='true' className='overflow-hidden pt-6 pb-6 mt-4 w-full'>
         <div className='flex items-stretch'>
           {Array.from({ length: visibleCount }).map((_, i) => (
             <div key={i} className='px-6 sm:px-3' style={{ width: `${100 / visibleCount}%` }}>
@@ -163,7 +165,7 @@ function BestSellers() {
 
       <div className='flex items-center justify-center py-6'>
         <div className='w-full max-w-lg bg-[#F7F5F0] border border-[#E6E1D7] rounded-3xl p-8 sm:p-10 text-center flex flex-col items-center gap-3 shadow-sm'>
-          <span className='font-jakarta text-[11px] uppercase tracking-widest text-gray-400 font-semibold'>
+          <span className='font-jakarta text-[11px] uppercase tracking-widest text-gray-600 font-semibold'>
             Connection Error
           </span>
           <h3 className='font-jakarta font-extrabold text-lg sm:text-xl text-gray-950 tracking-tight'>

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { IoIosArrowDown } from 'react-icons/io'
 import { motion, AnimatePresence } from 'framer-motion'
 
-function FAQ({ title, description }) {
+function FAQ({ title, description, headingLevel = 1 }) {
   const [openIndex, setOpenIndex] = useState(0)
 
   const faqItems = [
@@ -31,11 +31,12 @@ function FAQ({ title, description }) {
   const defaultDescription = "Find your perfect blend of style and comfort with our collection of shoes for any occasion. From business casual days to meeting up with friends after work to taking on your favorite trail, our shoes provide the ultimate in sustainable support for every step of your day and look incredible while doing so."
 
   const defaultTitle = "Frequently asked Questions"
+  const Heading = `h${headingLevel}`
   return (
     <section className='w-full max-w-4xl mb-5 sm:mb-10 mx-auto px-4 py-12 font-jakarta text-black'>
-      <h2 className='text-center uppercase tracking-[0.25em] text-sm sm:text-base font-semibold text-gray-900 mb-4'>
+      <Heading className='text-center uppercase tracking-[0.25em] text-sm sm:text-base font-semibold text-gray-900 mb-4'>
         {title || defaultTitle}
-      </h2>
+      </Heading>
 
       <p className='text-center text-gray-700 text-xs sm:text-sm md:text-base leading-relaxed max-w-3xl mx-auto mb-10'>
         {description || defaultDescription}
@@ -52,9 +53,11 @@ function FAQ({ title, description }) {
           return (
             <div key={index} className='border-b border-gray-400 pb-4'>
               <button
+                id={`faq-btn-${index}`}
                 onClick={() => toggleAccordion(index)}
                 className='w-full flex justify-between items-center text-left py-2 focus:outline-none group cursor-pointer'
                 aria-expanded={isOpen}
+                aria-controls={`faq-panel-${index}`}
               >
                 <span className='font-medium text-sm sm:text-base text-gray-900 group-hover:text-gray-700 transition-colors'>
                   {item.question}
@@ -70,22 +73,29 @@ function FAQ({ title, description }) {
                 </motion.span>
               </button>
 
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.div
-                    key='content'
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
-                    className='overflow-hidden'
-                  >
-                    <p className='mt-2 pr-8 text-justify text-xs sm:text-sm text-gray-700 leading-relaxed pb-2'>
-                      {item.answer}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div
+                id={`faq-panel-${index}`}
+                role='region'
+                aria-labelledby={`faq-btn-${index}`}
+                aria-hidden={!isOpen}
+              >
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      key='content'
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+                      className='overflow-hidden'
+                    >
+                      <p className='mt-2 pr-8 text-justify text-xs sm:text-sm text-gray-700 leading-relaxed pb-2'>
+                        {item.answer}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           )
         })}

@@ -83,7 +83,9 @@ function CarouselCard({ bgImage, mainLabel, secondaryLabel, tertiaryLabel }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setIsFocused(false)
+      }}
       className='group relative flex justify-center items-center flex-col bg-blend-darken text-white bg-[#00000029] rounded-3xl overflow-hidden py-8 px-4 focus-within:outline-none'
     >
       <div 

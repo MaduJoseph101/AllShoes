@@ -40,11 +40,13 @@ function MenItems() {
           <div className='absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent flex flex-col justify-between p-6 sm:p-10 text-white'>
 
             {/* BREADCRUMB FOR HOMEPAGE */}
-            <div className='text-xs sm:text-sm font-semibold tracking-wide flex items-center gap-2 text-gray-200'>
-              <Link to='/' className='hover:underline text-gray-300'>Home</Link>
-              <span>/</span>
-              <span className='text-white font-semibold'>Men's Shoes</span>
-            </div>
+            <nav aria-label='Breadcrumb' className='text-xs sm:text-sm font-semibold tracking-wide text-gray-200'>
+              <ol className='flex items-center gap-2'>
+                <li><Link to='/' className='hover:underline text-gray-300'>Home</Link></li>
+                <li aria-hidden='true'>/</li>
+                <li aria-current='page' className='text-white font-semibold'>Men's Shoes</li>
+              </ol>
+            </nav>
 
             <div className='max-w-xl space-y-2 mb-2 sm:mb-4'>
               <h1 className='text-3xl sm:text-[2.5rem] font-extrabold tracking-tight text-white'>
@@ -60,7 +62,9 @@ function MenItems() {
         {/* PRODUCTS CONTAINER*/}
         <div>
           {loading ? (
-            <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6'>
+            <>
+            <p role='status' aria-live='polite' className='sr-only'>Loading products…</p>
+            <div aria-hidden='true' className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6'>
               {Array.from({ length: 8 }).map((_, i) => (
                 <div 
                   key={i} 
@@ -81,15 +85,16 @@ function MenItems() {
                 </div>
               ))}
             </div>
+            </>
           ) : error ? (
             <div className='flex items-center justify-center py-12'>
               <div className='w-full max-w-lg bg-white border border-gray-200/80 rounded-3xl p-8 sm:p-10 text-center flex flex-col items-center gap-3 shadow-xs'>
-                <span className='font-jakarta text-[11px] uppercase tracking-widest text-gray-400 font-semibold'>
+                <span className='font-jakarta text-[11px] uppercase tracking-widest text-gray-600 font-semibold'>
                   Connection Error
                 </span>
-                <h3 className='font-jakarta font-extrabold text-lg sm:text-xl text-gray-950 tracking-tight'>
+                <h2 className='font-jakarta font-extrabold text-lg sm:text-xl text-gray-950 tracking-tight'>
                   Unable to load Men's Shoes
-                </h3>
+                </h2>
                 <p className='font-jakarta text-xs sm:text-sm text-gray-600 max-w-sm leading-relaxed'>
                   We couldn't retrieve the product list. Please check your network connection and try again.
                 </p>
@@ -124,9 +129,9 @@ function MenItems() {
 
                     {/* DETAILS */}
                     <div className='mt-2 sm:mt-4 pt-2 border-t border-gray-100 flex flex-col gap-2'>
-                      <h3 className='font-bold text-xs sm:text-sm text-gray-900 line-clamp-1 group-hover:text-black transition-colors'>
+                      <h2 className='font-bold text-xs sm:text-sm text-gray-900 line-clamp-1 group-hover:text-black transition-colors'>
                         {product.title}
-                      </h3>
+                      </h2>
                       <p className='text-[10px] sm:text-xs text-gray-500 line-clamp-1'>
                         {product.description}
                       </p>
@@ -148,7 +153,8 @@ function MenItems() {
 
        
         <div className='pt-8 border-t border-gray-300/60'>
-          <FAQ 
+          <FAQ
+            headingLevel={2}
             title="MEN'S SHOES" 
             description="Step into every part of your day with a collection of men's shoes built for style and comfort in equal measure. From sharp business meetings to relaxed evenings with friends, or tackling your favourite trail at the weekend, our shoes deliver reliable, sustainable support with every stride, while keeping you looking effortlessly sharp along the way."
           />

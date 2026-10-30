@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useCart } from './CartContext'
 import FadeIn from './FadeIn'
+import useFocusTrap from './useFocusTrap'
 import {
   FiUser,
   FiMail,
@@ -42,6 +43,8 @@ function Signup() {
   const [showPassword, setShowPassword] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const deleteDialogRef = useRef(null)
+  useFocusTrap(deleteDialogRef, showDeleteConfirm, () => setShowDeleteConfirm(false))
   const [notification, setNotification] = useState(null) // { type: 'success' | 'error', message: '' }
 
   // Sync tab with URL search parameter if changed
@@ -246,6 +249,8 @@ function Signup() {
             {/* FLOATING TOAST NOTIFICATION */}
             {notification && (
               <div
+                role={notification.type === 'error' ? 'alert' : 'status'}
+                aria-live={notification.type === 'error' ? 'assertive' : 'polite'}
                 className={`fixed top-20 left-1/2 right-auto -translate-x-1/2 w-[calc(100%-2rem)] sm:left-auto sm:right-4 sm:translate-x-0 sm:w-auto z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
                   notification.type === 'success'
                     ? 'bg-[#212121] text-white border-neutral-700'
@@ -276,9 +281,9 @@ function Signup() {
                   {initials}
                 </div>
                 <div>
-                
-                  <p className='text-xs sm:text-sm text-gray-400 font-medium'>{user.email}</p>
-                  <p className='text-[11px] text-gray-500 mt-1'>
+                  <h1 className='text-xl sm:text-2xl font-black uppercase tracking-tight'>{user.fullName}</h1>
+                  <p className='text-xs sm:text-sm text-gray-300 font-medium'>{user.email}</p>
+                  <p className='text-[11px] text-gray-300 mt-1'>
                     Member since {user.registeredAt || 'Recently'}
                   </p>
                 </div>
@@ -317,14 +322,21 @@ function Signup() {
             {/* DELETE ACCOUNT MODAL CONFIRMATION */}
             {showDeleteConfirm && (
               <div className='fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4'>
-                <div className='bg-[#ECE9E2] border border-gray-300 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 text-center animate-in fade-in zoom-in-95 duration-200'>
+                <div
+                  ref={deleteDialogRef}
+                  role='dialog'
+                  aria-modal='true'
+                  aria-labelledby='delete-account-title'
+                  tabIndex={-1}
+                  className='bg-[#ECE9E2] border border-gray-300 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 text-center animate-in fade-in zoom-in-95 duration-200'
+                >
                   {/* <div className='w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-xs'>
                     <FiTrash2 />
                   </div> */}
                   <div className='space-y-2'>
-                    <h3 className='text-xl font-black text-gray-950 uppercase tracking-wide'>
+                    <h2 id='delete-account-title' data-dialog-initial-focus tabIndex={-1} className='text-xl font-black text-gray-950 uppercase tracking-wide'>
                       Delete Account
-                    </h3>
+                    </h2>
                     <p className='text-xs text-gray-600 leading-relaxed'>
                       Are you sure you want to permanently delete your account? This will remove your
                       saved profile, default shipping address, and your personal cart and wishlist.
@@ -356,13 +368,13 @@ function Signup() {
                     <h2 className='text-base font-black uppercase tracking-wide text-gray-950'>
                       Edit Profile & Shipping Information
                     </h2>
-                    <p className='text-xs text-gray-500'>
+                    <p className='text-xs text-gray-600'>
                       Update your account information and default shipping destination.
                     </p>
                   </div>
                   <button
                     onClick={() => setIsEditing(false)}
-                    className='text-gray-400 hover:text-black p-2 rounded-full cursor-pointer'
+                    className='text-gray-600 hover:text-black p-2 rounded-full cursor-pointer'
                   >
                     <FiX className='text-lg' />
                   </button>
@@ -371,10 +383,11 @@ function Signup() {
                 <form onSubmit={handleSaveEdit} className='space-y-4'>
                   <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                     <div>
-                      <label className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor='profile-fullName' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
                         Full Name *
                       </label>
                       <input
+                        id='profile-fullName'
                         type='text'
                         name='fullName'
                         value={editData.fullName}
@@ -383,10 +396,11 @@ function Signup() {
                       />
                     </div>
                     <div>
-                      <label className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor='profile-email' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
                         Email Address *
                       </label>
                       <input
+                        id='profile-email'
                         type='email'
                         name='email'
                         value={editData.email}
@@ -395,10 +409,11 @@ function Signup() {
                       />
                     </div>
                     <div>
-                      <label className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor='profile-phone' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
                         Phone Number
                       </label>
                       <input
+                        id='profile-phone'
                         type='tel'
                         name='phone'
                         value={editData.phone}
@@ -408,10 +423,11 @@ function Signup() {
                       />
                     </div>
                     <div>
-                      <label className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor='profile-address' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
                         Street Address
                       </label>
                       <input
+                        id='profile-address'
                         type='text'
                         name='address'
                         value={editData.address}
@@ -421,10 +437,11 @@ function Signup() {
                       />
                     </div>
                     <div>
-                      <label className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor='profile-city' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
                         City
                       </label>
                       <input
+                        id='profile-city'
                         type='text'
                         name='city'
                         value={editData.city}
@@ -434,10 +451,11 @@ function Signup() {
                       />
                     </div>
                     <div>
-                      <label className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor='profile-zip' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
                         ZIP / Postal Code
                       </label>
                       <input
+                        id='profile-zip'
                         type='text'
                         name='zip'
                         value={editData.zip}
@@ -474,9 +492,9 @@ function Signup() {
               <div className='bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm flex flex-col justify-between'>
                 <div className='space-y-4'>
                   <div className='flex items-center justify-center'>
-                    <h3 className='text-xs font-extrabold uppercase tracking-wider text-gray-900'>
+                    <h2 className='text-xs font-extrabold uppercase tracking-wider text-gray-900'>
                        Shipping Address
-                    </h3>
+                    </h2>
                    
                   </div>
 
@@ -488,21 +506,21 @@ function Signup() {
                       {user.address ? (
                         user.address
                       ) : (
-                        <span className='text-gray-400 italic'>No street address specified</span>
+                        <span className='text-gray-600 italic'>No street address specified</span>
                       )}
                     </p>
                     <p className='text-gray-700'>
                       {user.city || user.zip ? (
                         `${user.city || ''} ${user.zip ? `— ${user.zip}` : ''}`
                       ) : (
-                        <span className='text-gray-400 italic'>City & ZIP not set</span>
+                        <span className='text-gray-600 italic'>City & ZIP not set</span>
                       )}
                     </p>
                     <p className='text-gray-600 pt-1'>
                       {user.phone ? (
                         `Phone: ${user.phone}`
                       ) : (
-                        <span className='text-gray-400 italic'>Phone number not set</span>
+                        <span className='text-gray-600 italic'>Phone number not set</span>
                       )}
                     </p>
                   </div>
@@ -580,6 +598,8 @@ function Signup() {
           {/* FLOATING TOAST NOTIFICATION */}
           {notification && (
             <div
+              role={notification.type === 'error' ? 'alert' : 'status'}
+              aria-live={notification.type === 'error' ? 'assertive' : 'polite'}
               className={`fixed top-20 left-1/2 right-auto -translate-x-1/2 w-[calc(100%-2rem)] sm:left-auto sm:right-4 sm:translate-x-0 sm:w-auto z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
                 notification.type === 'success'
                   ? 'bg-[#212121] text-white border-neutral-700'
@@ -682,14 +702,16 @@ function Signup() {
                             value={formData.fullName}
                             onChange={handleInputChange}
                             placeholder='James Stephen'
+                            aria-describedby={errors.fullName ? 'signup-fullName-error' : undefined}
+                            aria-invalid={Boolean(errors.fullName)}
                             className={`w-full bg-white border ${
                               errors.fullName ? 'border-red-500' : 'border-gray-300'
                             } rounded-2xl pl-9 pr-4 py-3 text-xs outline-none focus:border-black transition-colors`}
                           />
-                          <FiUser className='absolute left-3 top-3.5 text-gray-400 text-xs' />
+                          <FiUser className='absolute left-3 top-3.5 text-gray-600 text-xs' />
                         </div>
                         {errors.fullName && (
-                          <p className='text-[10px] text-red-500 font-semibold mt-1 px-1'>{errors.fullName}</p>
+                          <p id='signup-fullName-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1 px-1'>{errors.fullName}</p>
                         )}
                       </div>
 
@@ -709,14 +731,16 @@ function Signup() {
                             value={formData.email}
                             onChange={handleInputChange}
                             placeholder='james@example.com'
+                            aria-describedby={errors.email ? 'signup-email-error' : undefined}
+                            aria-invalid={Boolean(errors.email)}
                             className={`w-full bg-white border ${
                               errors.email ? 'border-red-500' : 'border-gray-300'
                             } rounded-2xl pl-9 pr-4 py-3 text-xs outline-none focus:border-black transition-colors`}
                           />
-                          <FiMail className='absolute left-3 top-3.5 text-gray-400 text-xs' />
+                          <FiMail className='absolute left-3 top-3.5 text-gray-600 text-xs' />
                         </div>
                         {errors.email && (
-                          <p className='text-[10px] text-red-500 font-semibold mt-1 px-1'>{errors.email}</p>
+                          <p id='signup-email-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1 px-1'>{errors.email}</p>
                         )}
                       </div>
 
@@ -736,21 +760,24 @@ function Signup() {
                             value={formData.password}
                             onChange={handleInputChange}
                             placeholder='••••••••'
+                            aria-describedby={errors.password ? 'signup-password-error' : undefined}
+                            aria-invalid={Boolean(errors.password)}
                             className={`w-full bg-white border ${
                               errors.password ? 'border-red-500' : 'border-gray-300'
                             } rounded-2xl pl-9 pr-4 py-3 text-xs outline-none focus:border-black transition-colors`}
                           />
-                          <FiLock className='absolute left-3 top-3.5 text-gray-400 text-xs' />
+                          <FiLock className='absolute left-3 top-3.5 text-gray-600 text-xs' />
                           <button
                             type='button'
                             onClick={() => setShowPassword(!showPassword)}
-                            className='absolute right-3 top-3.5 text-gray-400 hover:text-gray-700 cursor-pointer'
+                            className='absolute right-3 top-3.5 text-gray-600 hover:text-gray-700 cursor-pointer'
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
                           >
                             {showPassword ? <FiEyeOff className='text-xs' /> : <FiEye className='text-xs' />}
                           </button>
                         </div>
                         {errors.password && (
-                          <p className='text-[10px] text-red-500 font-semibold mt-1 px-1'>{errors.password}</p>
+                          <p id='signup-password-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1 px-1'>{errors.password}</p>
                         )}
                       </div>
                     </div>
@@ -843,7 +870,7 @@ function Signup() {
                           placeholder='+234 (555) 000-0000'
                           className='w-full bg-white border border-gray-300 rounded-2xl pl-9 pr-4 py-3 text-xs outline-none focus:border-black transition-colors'
                         />
-                        <FiPhone className='absolute left-3 top-3.5 text-gray-400 text-xs' />
+                        <FiPhone className='absolute left-3 top-3.5 text-gray-600 text-xs' />
                       </div>
                     </div>
                   </div>
@@ -868,14 +895,16 @@ function Signup() {
                         value={formData.email}
                         onChange={handleInputChange}
                         placeholder='james@example.com'
+                        aria-describedby={errors.email ? 'signin-email-error' : undefined}
+                        aria-invalid={Boolean(errors.email)}
                         className={`w-full bg-[#ECE9E2]/50 border ${
                           errors.email ? 'border-red-500' : 'border-gray-300'
                         } rounded-2xl pl-11 pr-4 py-3 text-xs outline-none focus:border-black transition-colors`}
                       />
-                      <FiMail className='absolute left-4 top-3.5 text-gray-400 text-sm' />
+                      <FiMail className='absolute left-4 top-3.5 text-gray-600 text-sm' />
                     </div>
                     {errors.email && (
-                      <p className='text-[10px] text-red-500 font-semibold mt-1 px-1'>{errors.email}</p>
+                      <p id='signin-email-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1 px-1'>{errors.email}</p>
                     )}
                   </div>
 
@@ -895,21 +924,24 @@ function Signup() {
                         value={formData.password}
                         onChange={handleInputChange}
                         placeholder='••••••••'
+                        aria-describedby={errors.password ? 'signin-password-error' : undefined}
+                        aria-invalid={Boolean(errors.password)}
                         className={`w-full bg-[#ECE9E2]/50 border ${
                           errors.password ? 'border-red-500' : 'border-gray-300'
                         } rounded-2xl pl-11 pr-11 py-3 text-xs outline-none focus:border-black transition-colors`}
                       />
-                      <FiLock className='absolute left-4 top-3.5 text-gray-400 text-sm' />
+                      <FiLock className='absolute left-4 top-3.5 text-gray-600 text-sm' />
                       <button
                         type='button'
                         onClick={() => setShowPassword(!showPassword)}
-                        className='absolute right-4 top-3.5 text-gray-400 hover:text-gray-700 cursor-pointer'
+                        className='absolute right-4 top-3.5 text-gray-600 hover:text-gray-700 cursor-pointer'
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? <FiEyeOff className='text-sm' /> : <FiEye className='text-sm' />}
                       </button>
                     </div>
                     {errors.password && (
-                      <p className='text-[10px] text-red-500 font-semibold mt-1 px-1'>{errors.password}</p>
+                      <p id='signin-password-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1 px-1'>{errors.password}</p>
                     )}
                   </div>
                 </div>

@@ -23,7 +23,7 @@ function SavedItems() {
             </div>
           </div>
           <div className='space-y-2'>
-            <h2 className='text-2xl font-extrabold text-gray-950 tracking-tight'>No Saved Items Yet</h2>
+            <h1 className='text-2xl font-extrabold text-gray-950 tracking-tight'>No Saved Items Yet</h1>
             <p className='text-sm text-gray-500 leading-relaxed'>
               Tap the heart icon on any shoe to save your favorite styles for later.
             </p>
@@ -56,7 +56,7 @@ function SavedItems() {
 
           <div className='flex items-center gap-2'>
             <h1 className='text-[15px ] sm:text-[1rem] flex gap-2 font-extrabold text-gray-950 tracking-tight uppercase'>
-              Saved Items <span className='text-gray-400 font-bold'>({wishlistItems.length})</span>
+              Saved Items <span className='text-gray-600 font-bold'>({wishlistItems.length})</span>
             </h1>
           </div>
         </div>
@@ -149,7 +149,7 @@ function SavedItems() {
               {/* DETAILS */}
               <div className='space-y-3 px-1 flex-1 flex flex-col justify-between'>
                 <div className=' flex flex-col gap-2'>
-                  <p className='text-[10px] font-bold text-gray-400 uppercase tracking-widest'>
+                  <p className='text-[10px] font-bold text-gray-600 uppercase tracking-widest'>
                     {item.brand || 'AllShoes'}
                   </p>
                   <Link

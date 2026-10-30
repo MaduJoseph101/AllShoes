@@ -86,7 +86,7 @@ function Cart() {
             </div>
           </div>
           <div className='space-y-2'>
-            <h2 className='text-2xl font-extrabold text-gray-950 tracking-tight'>Your cart is empty</h2>
+            <h1 className='text-2xl font-extrabold text-gray-950 tracking-tight'>Your cart is empty</h1>
             <p className='text-sm text-gray-500 leading-relaxed'>
               Looks like you haven't added anything yet. Explore our collection and find something you'll love.
             </p>
@@ -117,7 +117,7 @@ function Cart() {
             Continue Shopping
           </Link>
           <h1 className='text-[14px] sm:text-[1rem] font-extrabold flex gap-2 text-gray-950 tracking-tight uppercase'>
-            Cart <span className='text-gray-400 font-bold'>({itemCount})</span>
+            Cart <span className='text-gray-600 font-bold'>({itemCount})</span>
           </h1>
         </div>
 
@@ -130,7 +130,7 @@ function Cart() {
             <div className='flex justify-end'>
               <button
                 onClick={clearCart}
-                className='text-[11px] font-semibold uppercase tracking-wider text-gray-400 hover:text-red-500 transition-colors cursor-pointer'
+                className='text-[11px] font-semibold uppercase tracking-wider text-gray-600 hover:text-red-500 transition-colors cursor-pointer'
               >
                 Clear all
               </button>
@@ -155,7 +155,7 @@ function Cart() {
                 {/* DETAILS */}
                 <div className='flex flex-col justify-between flex-1 gap-3 min-w-0'>
                   <div className='space-y-2'>
-                    <p className='text-[10px] font-bold uppercase tracking-widest text-gray-400'>
+                    <p className='text-[10px] font-bold uppercase tracking-widest text-gray-600'>
                       {item.brand}
                     </p>
                     <Link
@@ -165,10 +165,10 @@ function Cart() {
                       {item.title}
                     </Link>
                     <div className='flex flex-wrap gap-2 pt-1'>
-                      <span className='text-[10px] font-semibold uppercase tracking-wider text-gray-500 bg-[#F4F1EA] px-2.5 py-0.5 rounded-full'>
+                      <span className='text-[10px] font-semibold uppercase tracking-wider text-gray-700 bg-[#F4F1EA] px-2.5 py-0.5 rounded-full'>
                         Size {item.size}
                       </span>
-                      <span className='flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 bg-[#F4F1EA] px-2.5 py-0.5 rounded-full'>
+                      <span className='flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-700 bg-[#F4F1EA] px-2.5 py-0.5 rounded-full'>
                         <span
                           className='w-2.5 h-2.5 rounded-full inline-block border border-gray-300 flex-shrink-0'
                           style={{ backgroundColor: item.color?.hex || '#333' }}
@@ -243,9 +243,9 @@ function Cart() {
 
             {/* PROMO CODE */}
             <div className='bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-200/70 space-y-3'>
-              <h3 className='text-xs font-bold uppercase tracking-widest text-gray-900 flex items-center gap-2'>
+              <h2 className='text-xs font-bold uppercase tracking-widest text-gray-900 flex items-center gap-2'>
                 <FiTag /> Promo Code
-              </h3>
+              </h2>
               {appliedPromo ? (
                 <div className='flex items-center justify-between bg-green-50 border border-green-200 rounded-2xl px-4 py-3'>
                   <span className='text-xs font-bold text-green-800'>{promoSuccess}</span>
@@ -260,6 +260,7 @@ function Cart() {
                 <div className='flex gap-2'>
                   <input
                     type='text'
+                    aria-label='Promo code'
                     value={promoInput}
                     onChange={(e) => setPromoInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handlePromo()}
@@ -281,7 +282,7 @@ function Cart() {
 
             {/* SUMMARY */}
             <div className='bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-200/70 space-y-4'>
-              <h3 className='text-xs font-bold uppercase tracking-widest text-gray-900'>Order Summary</h3>
+              <h2 className='text-xs font-bold uppercase tracking-widest text-gray-900'>Order Summary</h2>
 
               <div className='space-y-3 text-sm'>
                 <div className='flex justify-between text-gray-700'>
@@ -339,7 +340,7 @@ function Cart() {
                 Proceed to Checkout
               </button>
 
-              <p className='text-center text-[10px] text-gray-400 font-semibold tracking-wide'>
+              <p className='text-center text-[10px] text-gray-600 font-semibold tracking-wide'>
                 Gift wrapping available at checkout
               </p>
             </div>
@@ -389,7 +390,7 @@ function Cart() {
                   </div>
 
                   <div className='space-y-1.5'>
-                    <p className='text-[10px] font-bold text-gray-400 uppercase tracking-widest'>
+                    <p className='text-[10px] font-bold text-gray-600 uppercase tracking-widest'>
                       {item.brand || 'AllShoes'}
                     </p>
                     <h3 className='text-xs font-bold text-gray-950 line-clamp-1 group-hover:underline'>
