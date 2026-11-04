@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useCart } from '../CartContext'
-import { FiTrash2, FiMinus, FiPlus, FiShoppingBag, FiArrowLeft, FiTag, FiRefreshCw } from 'react-icons/fi'
+import { FiTrash2, FiMinus, FiPlus, FiShoppingBag, FiArrowLeft, FiTag } from 'react-icons/fi'
 import { FaTruck, FaUndoAlt } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
 
@@ -21,8 +21,6 @@ function Cart() {
   const [promoError, setPromoError] = useState('')
   const [promoSuccess, setPromoSuccess] = useState('')
   const [recommendations, setRecommendations] = useState([])
-  const [recsError, setRecsError] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -33,22 +31,16 @@ function Cart() {
         const data = await res.json()
         if (data.products) {
           setRecommendations(data.products.slice(0, 4))
-          setRecsError(false)
-        } else {
-          setRecsError(true)
         }
       } catch (error) {
         if (error.name !== 'AbortError') {
-          console.error('Failed to fetch recommendations:', error)
-          setRecsError(true)
         }
       }
     }
 
     fetchRecommendations()
-
     return () => controller.abort()
-  }, [retryCount])
+  }, [])
 
   const shippingThreshold = 100
   const shippingCost = subtotal >= shippingThreshold ? 0 : 9.99
@@ -61,9 +53,9 @@ function Cart() {
     if (PROMO_CODES[code]) {
       setAppliedPromo(code)
       setPromoError('')
-      setPromoSuccess(`"${code}" applied — ${(PROMO_CODES[code] * 100).toFixed(0)}% off!`)
+      setPromoSuccess(`"${code}" applied — ${(PROMO_CODES[code] * 100).toFixed(0)}% discount`)
     } else {
-      setPromoError('Invalid promo code. Try ALLSHOES10 or SAVE20.')
+      setPromoError('Invalid code. Try ALLSHOES10 or SAVE20.')
       setPromoSuccess('')
     }
   }
@@ -75,102 +67,98 @@ function Cart() {
     setPromoError('')
   }
 
-  // EMPTY CART STATE 
+  // EMPTY STATE
   if (cartItems.length === 0) {
     return (
-      <div className='min-h-[80vh] bg-[#ECE9E2] font-jakarta flex flex-col items-center justify-center px-4 py-16'>
-        <div className='bg-white rounded-3xl p-10 sm:p-14 max-w-md w-full text-center space-y-6 shadow-sm border border-gray-200/70'>
-          <div className='flex justify-center'>
-            <div className='bg-[#F4F1EA] p-6 rounded-full'>
-              <FiShoppingBag className='text-4xl text-gray-400' />
+      <div className="min-h-[80vh] bg-[#FBFBFD] font-jakarta flex flex-col items-center justify-center px-4 py-16">
+        <div className="bg-white rounded-3xl p-10 sm:p-14 max-w-md w-full text-center space-y-6 shadow-xs border border-black/[0.06]">
+          <div className="flex justify-center">
+            <div className="bg-[#F5F5F7] p-6 rounded-full text-neutral-400">
+              <FiShoppingBag className="text-3xl" />
             </div>
           </div>
-          <div className='space-y-2'>
-            <h1 className='text-2xl font-extrabold text-gray-950 tracking-tight'>Your cart is empty</h1>
-            <p className='text-sm text-gray-500 leading-relaxed'>
-              Looks like you haven't added anything yet. Explore our collection and find something you'll love.
+          <div className="space-y-2">
+            <h1 className="text-xl sm:text-2xl font-semibold text-neutral-900 tracking-tight">Your cart is empty</h1>
+            <p className="text-xs sm:text-sm text-neutral-500 font-light leading-relaxed">
+              Explore our collection to find sustainable comfort designed for daily movement.
             </p>
           </div>
           <Link
-            to='/all'
-            className='inline-block bg-[#212121] text-white font-bold text-xs tracking-wider uppercase px-8 py-4 rounded-full hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-sm'
+            to="/all"
+            className="inline-block bg-[#000000] hover:bg-black text-white font-medium text-xs tracking-wider uppercase px-8 py-3.5 rounded-full transition-all duration-200 shadow-sm"
           >
-            Shop Now
+            Explore Collection
           </Link>
         </div>
       </div>
     )
   }
 
-  // MAIN CART PAGE 
   return (
-    <div className='min-h-screen bg-[#ECE9E2] font-jakarta py-8 px-4 sm:px-8'>
-      <div className='max-w-6xl mx-auto space-y-6'>
+    <div className="min-h-screen bg-[#FBFBFD] font-jakarta py-10 px-4 sm:px-8">
+      <div className="max-w-6xl mx-auto space-y-8">
 
         {/* HEADER */}
-        <div className='flex items-center justify-between'>
+        <div className="flex items-center justify-between border-b border-black/[0.06] pb-4">
           <Link
-            to='/all'
-            className='inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 hover:text-black transition-colors'
+            to="/all"
+            className="inline-flex items-center gap-2 text-xs font-medium text-neutral-500 hover:text-black transition-colors"
           >
-            <FiArrowLeft className='text-xs' />
-            Continue Shopping
+            <FiArrowLeft className="text-xs" /> Continue Shopping
           </Link>
-          <h1 className='text-[14px] sm:text-[1rem] font-extrabold flex gap-2 text-gray-950 tracking-tight uppercase'>
-            Cart <span className='text-gray-600 font-bold'>({itemCount})</span>
+          <h1 className="text-base sm:text-lg font-semibold text-neutral-900 tracking-tight">
+            Review Cart <span className="text-neutral-400 font-normal">({itemCount})</span>
           </h1>
         </div>
 
-        <div className='grid grid-cols-1 lg:grid-cols-12 gap-6 items-start'>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-          {/* CART ITEMS */}
-          <div className='lg:col-span-7 space-y-4'>
-
-            {/* Clear all */}
-            <div className='flex justify-end'>
+          {/* CART ITEMS LIST */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="flex justify-end">
               <button
                 onClick={clearCart}
-                className='text-[11px] font-semibold uppercase tracking-wider text-gray-600 hover:text-red-500 transition-colors cursor-pointer'
+                className="text-[11px] font-medium text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
               >
-                Clear all
+                Clear all items
               </button>
             </div>
 
             {cartItems.map((item) => (
               <div
                 key={item.key}
-                className='bg-white rounded-3xl p-4 sm:p-6 flex gap-4 sm:gap-6 shadow-sm border border-gray-200/70 transition-all duration-200 hover:shadow-md'
+                className="bg-white rounded-3xl p-5 sm:p-6 flex gap-4 sm:gap-6 border border-neutral-200/80 shadow-sm transition-all duration-200"
               >
-                {/* THUMBNAIL */}
-                <Link to={`/productdetails/${item.id}`} className='flex-shrink-0'>
-                  <div className='w-24 h-24 sm:w-28 sm:h-28 bg-[#F4F1EA] rounded-2xl flex items-center justify-center overflow-hidden'>
+                {/* Thumbnail */}
+                <Link to={`/productdetails/${item.id}`} className="shrink-0">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 bg-[#F5F5F7] rounded-2xl flex items-center justify-center overflow-hidden">
                     <img
                       src={item.thumbnail}
                       alt={item.title}
-                      className='w-full h-full object-contain p-2 hover:scale-105 transition-transform duration-300'
+                      className="max-h-[82%] max-w-[82%] object-contain hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                 </Link>
 
-                {/* DETAILS */}
-                <div className='flex flex-col justify-between flex-1 gap-3 min-w-0'>
-                  <div className='space-y-2'>
-                    <p className='text-[10px] font-bold uppercase tracking-widest text-gray-600'>
+                {/* Details */}
+                <div className="flex flex-col justify-between flex-1 min-w-0">
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-semibold tracking-wider uppercase text-neutral-400">
                       {item.brand}
-                    </p>
+                    </span>
                     <Link
                       to={`/productdetails/${item.id}`}
-                      className='text-sm sm:text-base font-bold text-gray-950 tracking-tight line-clamp-2 hover:underline'
+                      className="text-sm sm:text-base font-medium text-neutral-900 tracking-tight truncate block hover:underline"
                     >
                       {item.title}
                     </Link>
-                    <div className='flex flex-wrap gap-2 pt-1'>
-                      <span className='text-[10px] font-semibold uppercase tracking-wider text-gray-700 bg-[#F4F1EA] px-2.5 py-0.5 rounded-full'>
+                    <div className="flex flex-wrap gap-2 pt-0.5">
+                      <span className="text-[10px] text-neutral-500 bg-[#F5F5F7] px-2.5 py-0.5 rounded-full">
                         Size {item.size}
                       </span>
-                      <span className='flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-700 bg-[#F4F1EA] px-2.5 py-0.5 rounded-full'>
+                      <span className="flex items-center gap-1.5 text-[10px] text-neutral-500 bg-[#F5F5F7] px-2.5 py-0.5 rounded-full">
                         <span
-                          className='w-2.5 h-2.5 rounded-full inline-block border border-gray-300 flex-shrink-0'
+                          className="w-2 h-2 rounded-full inline-block border border-black/10 shrink-0"
                           style={{ backgroundColor: item.color?.hex || '#333' }}
                         />
                         {item.color?.name?.split(' ')[0]}
@@ -178,40 +166,39 @@ function Cart() {
                     </div>
                   </div>
 
-                  <div className='flex items-center justify-between mt-3'>
-
-                    {/* QTY STEPPER */}
-                    <div className='flex items-center gap-1 sm:gap-3 bg-[#F4F1EA] rounded-full px-1 py-1'>
+                  <div className="flex items-center justify-between mt-4">
+                    {/* Stepper */}
+                    <div className="flex items-center gap-1 bg-[#F5F5F7] rounded-full p-0.5">
                       <button
                         onClick={() => updateQuantity(item.key, -1)}
-                        className='w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-xs hover:bg-[#212121] hover:text-white transition-all duration-150 cursor-pointer'
-                        aria-label='Decrease quantity'
+                        className="w-7 h-7 flex items-center justify-center rounded-full bg-white text-neutral-700 shadow-2xs hover:text-black transition-colors cursor-pointer"
+                        aria-label="Decrease quantity"
                       >
-                        <FiMinus className='text-xs' />
+                        <FiMinus className="text-xs" />
                       </button>
 
-                      <span className='text-sm font-bold text-gray-950 w-5 text-center'>
+                      <span className="text-xs font-medium text-neutral-900 w-6 text-center">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => updateQuantity(item.key, 1)}
-                        className='w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-xs hover:bg-[#212121] hover:text-white transition-all duration-150 cursor-pointer'
-                        aria-label='Increase quantity'
+                        className="w-7 h-7 flex items-center justify-center rounded-full bg-white text-neutral-700 shadow-2xs hover:text-black transition-colors cursor-pointer"
+                        aria-label="Increase quantity"
                       >
-                        <FiPlus className='text-xs' />
+                        <FiPlus className="text-xs" />
                       </button>
                     </div>
 
-                    <div className='flex items-center gap-4'>
-                      <span className='text-base font-extrabold text-gray-950'>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm sm:text-base font-semibold text-neutral-900">
                         {currencyFormatter.format(item.price * item.quantity)}
                       </span>
                       <button
                         onClick={() => removeFromCart(item.key)}
-                        aria-label='Remove item'
-                        className='text-gray-300 hover:text-red-500 transition-colors cursor-pointer p-1.5 rounded-full hover:bg-red-50'
+                        aria-label={`Remove ${item.title}`}
+                        className="text-neutral-400 hover:text-red-500 transition-colors cursor-pointer p-1"
                       >
-                        <FiTrash2 className='text-sm' />
+                        <FiTrash2 className="text-sm" />
                       </button>
                     </div>
                   </div>
@@ -219,189 +206,145 @@ function Cart() {
               </div>
             ))}
 
-            {/* TRUST BADGES */}
-            <div className='grid grid-cols-2 gap-3 pt-2'>
-              <div className='bg-white rounded-2xl p-4 flex items-center gap-3 shadow-xs border border-gray-200/60'>
-                <FaTruck className='text-gray-400 text-xl flex-shrink-0' />
+            {/* Trust highlights */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="bg-white rounded-2xl p-4 flex items-center gap-3 border border-black/[0.04]">
+                <FaTruck className="text-neutral-400 text-lg shrink-0" />
                 <div>
-                  <p className='text-[11px] font-bold text-gray-900 uppercase tracking-wide'>Free Shipping</p>
-                  <p className='text-[10px] text-gray-500'>On orders over $100</p>
+                  <p className="text-[11px] font-semibold text-neutral-800">Free Shipping</p>
+                  <p className="text-[10px] text-neutral-400 font-light">On orders over $100</p>
                 </div>
               </div>
-              <div className='bg-white rounded-2xl p-4 flex items-center gap-3 shadow-xs border border-gray-200/60'>
-                <FaUndoAlt className='text-gray-400 text-xl flex-shrink-0' />
+              <div className="bg-white rounded-2xl p-4 flex items-center gap-3 border border-black/[0.04]">
+                <FaUndoAlt className="text-neutral-400 text-lg shrink-0" />
                 <div>
-                  <p className='text-[11px] font-bold text-gray-900 uppercase tracking-wide'>Easy Returns</p>
-                  <p className='text-[10px] text-gray-500'>30-day hassle-free returns</p>
+                  <p className="text-[11px] font-semibold text-neutral-800">Easy Returns</p>
+                  <p className="text-[10px] text-neutral-400 font-light">30-day trial guarantee</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* ORDER SUMMARY */}
-          <div className='lg:col-span-5 space-y-4'>
+          <div className="lg:col-span-5 space-y-4">
 
-            {/* PROMO CODE */}
-            <div className='bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-200/70 space-y-3'>
-              <h2 className='text-xs font-bold uppercase tracking-widest text-gray-900 flex items-center gap-2'>
-                <FiTag /> Promo Code
+            {/* PROMO */}
+            <div className="bg-white rounded-3xl p-6 border border-neutral-200/80 shadow-sm space-y-3">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-700 flex items-center gap-2">
+                <FiTag /> Promotion Code
               </h2>
               {appliedPromo ? (
-                <div className='flex items-center justify-between bg-green-50 border border-green-200 rounded-2xl px-4 py-3'>
-                  <span className='text-xs font-bold text-green-800'>{promoSuccess}</span>
+                <div className="flex items-center justify-between bg-neutral-100 rounded-2xl px-4 py-3">
+                  <span className="text-xs font-medium text-neutral-900">{promoSuccess}</span>
                   <button
                     onClick={removePromo}
-                    className='text-[10px] font-bold text-green-700 hover:text-red-500 transition-colors cursor-pointer uppercase tracking-wide'
+                    className="text-[10px] font-semibold text-neutral-500 hover:text-red-500 transition-colors cursor-pointer uppercase"
                   >
                     Remove
                   </button>
                 </div>
               ) : (
-                <div className='flex gap-2'>
+                <div className="flex gap-2">
                   <input
-                    type='text'
-                    aria-label='Promo code'
+                    type="text"
                     value={promoInput}
                     onChange={(e) => setPromoInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handlePromo()}
-                    placeholder='Enter promo code'
-                    className='flex-1 text-xs font-semibold bg-[#F4F1EA] border border-transparent focus:border-gray-400 rounded-full px-4 py-3 outline-none placeholder-gray-400 transition-colors'
+                    placeholder="Enter code (e.g. SAVE20)"
+                    aria-label="Promotion code"
+                    className="flex-1 text-xs font-medium bg-[#F5F5F7] rounded-full px-4 py-3 outline-none focus:ring-2 focus:ring-black/10 placeholder-neutral-400 transition-all"
                   />
                   <button
                     onClick={handlePromo}
-                    className='text-xs font-bold uppercase tracking-wider bg-[#212121] text-white px-5 py-3 rounded-full hover:bg-black transition-all cursor-pointer'
+                    className="text-xs font-semibold bg-[#000000] text-white px-5 py-3 rounded-full hover:bg-black transition-all cursor-pointer"
                   >
                     Apply
                   </button>
                 </div>
               )}
               {promoError && (
-                <p className='text-[10px] text-red-500 font-semibold'>{promoError}</p>
+                <p className="text-[10px] text-red-500 font-medium">{promoError}</p>
               )}
             </div>
 
-            {/* SUMMARY */}
-            <div className='bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-200/70 space-y-4'>
-              <h2 className='text-xs font-bold uppercase tracking-widest text-gray-900'>Order Summary</h2>
+            {/* SUMMARY NUMBERS */}
+            <div className="bg-white rounded-3xl p-6 border border-neutral-200/80 shadow-sm space-y-4">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-700">Order Summary</h2>
 
-              <div className='space-y-3 text-sm'>
-                <div className='flex justify-between text-gray-700'>
+              <div className="space-y-3 text-xs sm:text-sm">
+                <div className="flex justify-between text-neutral-600">
                   <span>Subtotal ({itemCount} item{itemCount !== 1 ? 's' : ''})</span>
-                  <span className='font-bold'>{currencyFormatter.format(subtotal)}</span>
+                  <span className="font-medium text-neutral-900">{currencyFormatter.format(subtotal)}</span>
                 </div>
 
                 {appliedPromo && (
-                  <div className='flex justify-between text-green-600'>
-                    <span className='font-semibold'>Discount ({(PROMO_CODES[appliedPromo] * 100).toFixed(0)}%)</span>
-                    <span className='font-bold'>-{currencyFormatter.format(discount)}</span>
+                  <div className="flex justify-between text-emerald-700 font-medium">
+                    <span>Discount</span>
+                    <span>-{currencyFormatter.format(discount)}</span>
                   </div>
                 )}
 
-                <div className='flex justify-between text-gray-700'>
+                <div className="flex justify-between text-neutral-600">
                   <span>Shipping</span>
-                  <span className='font-bold'>
-                    {shippingCost === 0
-                      ? <span className='text-green-600'>FREE</span>
-                      : currencyFormatter.format(shippingCost)
-                    }
+                  <span className="font-medium text-neutral-900">
+                    {shippingCost === 0 ? <span className="text-emerald-700">Free</span> : currencyFormatter.format(shippingCost)}
                   </span>
                 </div>
 
-                {shippingCost > 0 && (
-                  <div className='bg-[#F4F1EA] rounded-2xl px-4 py-2.5'>
-                    <p className='text-[10px] text-gray-600 font-semibold'>
-                      Add <span className='font-extrabold text-gray-900'>{currencyFormatter.format(shippingThreshold - subtotal)}</span> more to unlock free shipping!
-                    </p>
-                    <div className='mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden'>
-                      <div
-                        className='h-full bg-[#212121] rounded-full transition-all duration-500'
-                        style={{ width: `${Math.min((subtotal / shippingThreshold) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div className='flex justify-between text-gray-700'>
-                  <span>Est. Tax (8%)</span>
-                  <span className='font-bold'>{currencyFormatter.format(tax)}</span>
+                <div className="flex justify-between text-neutral-600">
+                  <span>Estimated Tax (8%)</span>
+                  <span className="font-medium text-neutral-900">{currencyFormatter.format(tax)}</span>
                 </div>
 
-                <div className='border-t border-gray-100 pt-3 flex justify-between items-center'>
-                  <span className='font-extrabold text-gray-950 text-base uppercase tracking-tight'>Total</span>
-                  <span className='font-extrabold text-gray-950 text-xl'>{currencyFormatter.format(total)}</span>
+                <div className="border-t border-black/[0.06] pt-3 flex justify-between items-baseline">
+                  <span className="font-semibold text-neutral-900 text-sm">Total</span>
+                  <span className="font-semibold text-neutral-900 text-lg">{currencyFormatter.format(total)}</span>
                 </div>
               </div>
 
-              {/* CHECKOUT BUTTON */}
               <button
                 onClick={openCheckout}
-                className='w-full py-4 bg-[#212121] text-white font-bold text-xs sm:text-sm tracking-wider uppercase rounded-full hover:bg-black hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 shadow-sm cursor-pointer'
+                className="w-full py-4 bg-[#000000] hover:bg-black text-white font-semibold text-xs tracking-wider uppercase rounded-full transition-all shadow-sm hover:shadow cursor-pointer"
               >
                 Proceed to Checkout
               </button>
-
-              <p className='text-center text-[10px] text-gray-600 font-semibold tracking-wide'>
-                Gift wrapping available at checkout
-              </p>
             </div>
 
           </div>
         </div>
 
         {/* RECOMMENDATIONS */}
-        {recsError && (
-          <div className='pt-12 border-t border-gray-300/60 flex flex-col items-center gap-3 py-6'>
-            <p className='text-sm font-semibold text-gray-500'>
-              Couldn't load recommendations. Check your connection and try again.
-            </p>
-            <button
-              onClick={() => setRetryCount((count) => count + 1)}
-              className='flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-700 bg-[#F4F1EA] px-4 py-2 rounded-full hover:bg-black hover:text-white transition-colors'
-            >
-              <FiRefreshCw /> Retry
-            </button>
-          </div>
-        )}
-
         {recommendations.length > 0 && (
-          <div className='pt-12 border-t border-gray-300/60 space-y-6'>
-            <div className='flex items-center justify-between'>
-              <h2 className='text-[14px] sm:text-[1.1rem] font-extrabold text-gray-950 uppercase tracking-wide'>
-                You May Also Like
-              </h2>
-              <Link to='/all' className='text-xs font-bold uppercase tracking-wider text-gray-600 hover:text-black underline'>
-                View All Shoes →
-              </Link>
-            </div>
+          <div className="pt-12 border-t border-black/[0.06] space-y-6">
+            <h2 className="text-lg font-semibold text-neutral-900 tracking-tight">
+              You May Also Like
+            </h2>
 
-            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4'>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               {recommendations.map((item) => (
                 <Link
                   key={item.id}
                   to={`/productdetails/${item.id}`}
-                  className='bg-white rounded-3xl p-4 border border-gray-200/70 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group'
+                  className="group block bg-white rounded-3xl p-3 border border-neutral-300 hover:border-neutral-900 shadow-xs hover:shadow-lg transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
                 >
-                  <div className='bg-[#F4F1EA] rounded-2xl p-4 flex items-center justify-center min-h-[160px] mb-3 overflow-hidden'>
+                  <div className="bg-[#F5F5F7] rounded-2xl p-5 aspect-square flex items-center justify-center overflow-hidden group-hover:bg-[#ECECEE] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
                     <img
                       src={item.thumbnail}
                       alt={item.title}
-                      className='max-h-32 object-contain group-hover:scale-105 transition-transform duration-300'
+                      className="max-h-[85%] max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
 
-                  <div className='space-y-1.5'>
-                    <p className='text-[10px] font-bold text-gray-600 uppercase tracking-widest'>
+                  <div className="pt-3 pb-1 px-1.5 flex flex-col gap-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
                       {item.brand || 'AllShoes'}
-                    </p>
-                    <h3 className='text-xs font-bold text-gray-950 line-clamp-1 group-hover:underline'>
-                      {item.title}
-                    </h3>
-                    <div className='flex justify-between items-center pt-1'>
-                      <span className='text-sm font-extrabold text-gray-950'>
+                    </span>
+                    <div className="flex justify-between items-baseline gap-2">
+                      <h3 className="text-xs sm:text-sm font-medium text-neutral-900 truncate group-hover:text-black">
+                        {item.title}
+                      </h3>
+                      <span className="text-xs text-neutral-800 font-semibold shrink-0">
                         {currencyFormatter.format(item.price)}
-                      </span>
-                      <span className='text-[10px] font-bold uppercase tracking-wider text-gray-700 bg-[#F4F1EA] px-2.5 py-1 rounded-full group-hover:bg-black group-hover:text-white transition-colors'>
-                        View Details
                       </span>
                     </div>
                   </div>

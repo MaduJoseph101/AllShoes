@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { FaStar, FaTruck, FaShieldAlt, FaArrowLeft, FaHeart } from 'react-icons/fa'
-import { FiHeart } from 'react-icons/fi'
+import { FaHeart } from 'react-icons/fa'
+import { FiHeart, FiArrowLeft, FiCheck } from 'react-icons/fi'
 import { useCart } from '../CartContext'
 import ProductsDisplay from './ProductsDisplay'
 
@@ -25,9 +25,7 @@ function ProductDetails() {
       try {
         setLoading(true)
         const res = await fetch(`https://dummyjson.com/products/${id}`)
-        if (!res.ok) {
-          throw new Error('Product not found')
-        }
+        if (!res.ok) throw new Error('Product not found')
         const data = await res.json()
         setProduct(data)
       } catch (err) {
@@ -36,76 +34,55 @@ function ProductDetails() {
         setLoading(false)
       }
     }
-
     fetchProductDetails()
   }, [id])
 
   const colors = [
-    { name: 'Natural Black (Classic Edition)', bg: 'bg-[#2b2b2b]', border: 'border-black' },
-    { name: 'Charcoal Gray', bg: 'bg-[#525252]', border: 'border-gray-500' },
-    { name: 'Blizzard White', bg: 'bg-[#f5f5f5]', border: 'border-gray-300' },
+    { name: 'Natural Charcoal', bg: 'bg-[#2b2b2b]', border: 'border-black' },
+    { name: 'Slate Gray', bg: 'bg-[#525252]', border: 'border-gray-500' },
+    { name: 'Mist White', bg: 'bg-[#f5f5f5]', border: 'border-gray-300' },
   ]
 
   const colorHexMap = ['#2b2b2b', '#525252', '#f5f5f5']
 
-  // Derive the cart key for the currently selected 
   const cartKey = product && selectedSize
     ? `${product.id}-${selectedSize}-${colors[selectedColor].name}`
     : null
 
-  //CHECKS IF A PRODUCT VARIANT ALREADY EXISTS IN CART
   const cartItem = cartItems.find((i) => i.key === cartKey)
   const cartQty = cartItem ? cartItem.quantity : 0
   const isMaxStockReached = product && cartQty >= (product.stock || 99)
 
   const [addedToCart, setAddedToCart] = useState(false)
-  const [wasIncrement, setWasIncrement] = useState(false)
-  const [stockWarning, setStockWarning] = useState(false)
 
   const handleAddToCart = () => {
     if (!user) {
-      // Trigger authentication prompt without false stock warning
       addToCart(product, selectedSize || 9, { ...colors[selectedColor], hex: colorHexMap[selectedColor] })
       return
     }
 
     if (!selectedSize) return
     if (isMaxStockReached) {
-      setStockWarning(true)
-      setTimeout(() => setStockWarning(false), 3500)
       return
     }
 
-    const isIncrement = cartQty > 0
     const success = addToCart(product, selectedSize, { ...colors[selectedColor], hex: colorHexMap[selectedColor] })
     if (success) {
-      setWasIncrement(isIncrement)
       setAddedToCart(true)
       setTimeout(() => setAddedToCart(false), 4000)
-    } else {
-      setStockWarning(true)
-      setTimeout(() => setStockWarning(false), 3500)
     }
   }
 
   if (loading) {
     return (
-      <div className='min-h-screen bg-[#ECE9E2] font-jakarta py-10 px-4 sm:px-8'>
-        <div className='max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 animate-pulse'>
-          <div className='lg:col-span-7 space-y-4'>
-            <div className='w-full h-[450px] bg-gray-300 rounded-3xl' />
-            <div className='flex gap-3'>
-              <div className='w-20 h-20 bg-gray-300 rounded-2xl' />
-              <div className='w-20 h-20 bg-gray-300 rounded-2xl' />
-              <div className='w-20 h-20 bg-gray-300 rounded-2xl' />
-            </div>
-          </div>
-          <div className='lg:col-span-5 bg-white p-8 rounded-3xl space-y-6'>
-            <div className='h-8 bg-gray-300 rounded w-3/4' />
-            <div className='h-4 bg-gray-200 rounded w-1/2' />
-            <div className='h-8 bg-gray-300 rounded w-1/3' />
-            <div className='h-32 bg-gray-200 rounded-2xl' />
-            <div className='h-14 bg-gray-300 rounded-full' />
+      <div className="min-h-screen bg-[#FBFBFD] font-jakarta py-12 px-6">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 animate-pulse">
+          <div className="lg:col-span-7 bg-[#F5F5F7] rounded-3xl aspect-square w-full" />
+          <div className="lg:col-span-5 space-y-6 pt-4">
+            <div className="h-8 bg-neutral-200 rounded w-3/4" />
+            <div className="h-6 bg-neutral-200 rounded w-1/3" />
+            <div className="h-32 bg-neutral-200 rounded-2xl" />
+            <div className="h-12 bg-neutral-200 rounded-full" />
           </div>
         </div>
       </div>
@@ -114,12 +91,12 @@ function ProductDetails() {
 
   if (error || !product) {
     return (
-      <div className='min-h-[70vh] bg-[#ECE9E2] font-jakarta flex flex-col items-center justify-center px-4'>
-        <div className='bg-white rounded-3xl p-8 max-w-md text-center space-y-4 shadow-sm'>
-          <h1 className='text-2xl font-bold text-gray-900'>Product Not Found</h1>
-          <p className='text-gray-600 text-sm'>The product you are looking for does not exist or has been removed.</p>
-          <Link to='/' className='inline-block bg-black text-white font-bold px-6 py-3 rounded-full text-sm hover:opacity-80 transition-opacity'>
-            Back to Homepage
+      <div className="min-h-[70vh] bg-[#FBFBFD] font-jakarta flex flex-col items-center justify-center px-4">
+        <div className="text-center space-y-4 max-w-sm">
+          <h2 className="text-xl font-semibold text-neutral-900">Product Not Found</h2>
+          <p className="text-neutral-500 text-sm">The style you are looking for is currently unavailable.</p>
+          <Link to="/" className="inline-block bg-[#000000] text-white px-6 py-3 rounded-full text-xs font-medium">
+            Return to Homepage
           </Link>
         </div>
       </div>
@@ -129,127 +106,101 @@ function ProductDetails() {
   const imagesList = product.images && product.images.length > 0 ? product.images : [product.thumbnail]
 
   return (
-    <div className='min-h-screen bg-[#ECE9E2] font-jakarta py-8 px-4 sm:px-8'>
-      <div className='max-w-6xl mx-auto space-y-8'>
+    <div className="min-h-screen bg-[#FBFBFD] font-jakarta py-8 px-4 sm:px-8">
+      <div className="max-w-6xl mx-auto space-y-8">
         
-        {/* BACK BUTTON*/}
+        {/* BREADCRUMB / BACK LINK */}
         <div>
-          <button onClick={() => navigate(-1)} className='inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 hover:text-black transition-colors cursor-pointer'>
-            <FaArrowLeft className='text-xs' /> Back
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-xs font-medium text-neutral-500 hover:text-black transition-colors cursor-pointer"
+          >
+            <FiArrowLeft className="text-xs" /> Back
           </button>
         </div>
 
-        <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 items-start'>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
-          {/* PRODUCT GALLERY */}
-          <div className='lg:col-span-7 space-y-4'>
-
-            {/* PRODUCT IMAGE */}
-            <div className='relative bg-[#F4F1EA] rounded-3xl p-6 sm:p-10 flex items-center justify-center min-h-[380px] sm:min-h-[480px] border border-gray-200/80 shadow-xs overflow-hidden'>
-              <span className='absolute top-4 left-3 sm:top-6 sm:left-6 bg-white text-gray-900 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-xs uppercase'>
-                Trending
-              </span>
+          {/* STUDIO GALLERY */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="wide-product-gallery relative bg-[#F5F5F7] rounded-3xl p-8 sm:p-14 flex items-center justify-center min-h-[420px] sm:min-h-[520px] overflow-hidden border border-black/[0.04]">
               <img 
                 src={imagesList[selectedImage] || product.thumbnail} 
                 alt={product.title} 
-                className='max-h-[380px] sm:max-h-[500px] w-auto object-contain transition-all duration-400 hover:scale-105'
+                className="wide-product-image max-h-[420px] sm:max-h-[480px] w-auto object-contain transition-all duration-500 hover:scale-[1.03]"
               />
             </div>
 
-            {/* THUMBNAIL NAV*/}
+            {/* THUMBNAILS */}
             {imagesList.length > 1 && (
-              <div className='flex gap-3 overflow-x-auto pb-2 scrollbar-none'>
+              <div className="flex gap-3 overflow-x-auto pb-2">
                 {imagesList.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
-                    className={`relative w-30 h-20 rounded-2xl bg-[#F4F1EA] p-2 border-gray-500 border-1 shadow-2xs transition-all cursor-pointer flex-shrink-0 flex items-center justify-center ${
-                      selectedImage === idx ? 'border-black shadow-xs' : 'border-transparent opacity-70 hover:opacity-100'
+                    className={`relative w-20 h-20 rounded-2xl bg-[#F5F5F7] p-2 transition-all cursor-pointer flex-shrink-0 flex items-center justify-center border ${
+                      selectedImage === idx ? 'border-black ring-1 ring-black' : 'border-black/[0.06] opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img src={img} alt={`${product.title} thumbnail ${idx + 1}`} className='max-h-full object-contain' />
+                    <img src={img} alt={`Preview ${idx + 1}`} className="max-h-full object-contain" />
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* PRODUCT INFO*/}
-          <div className='lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm border border-gray-200/70'>
+          {/* PRODUCT SPEC & PURCHASE PANEL */}
+          <div className="lg:col-span-5 space-y-6">
             
-            <div className='space-y-3'>
-              <h1 className='text-2xl sm:text-2xl font-bold text-gray-900 tracking-wide'>
+            {/* Header info */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-semibold tracking-[0.15em] uppercase text-neutral-400">
+                {product.brand || 'AllShoes Exclusive'}
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] text-[#000000]">
                 {product.title}
               </h1>
-              <p className='text-xs sm:text-[11px] font-semibold tracking-wider text-gray-700 uppercase'>
-                Available discount : <span className='text-green-600'>%{product.discountPercentage}</span>
-                
-              </p>
+              <div className="flex items-baseline gap-3 pt-1">
+                <span className="text-xl sm:text-2xl font-semibold text-neutral-900">
+                  ${product.price}
+                </span>
+                <span className="text-xs text-neutral-500 font-light">
+                  Free standard shipping & 30-day returns
+                </span>
+              </div>
             </div>
 
-            <div className='flex items-center gap-3'>
-              <span className='text-xl font-extrabold text-gray-950'>
-                ${product.price}
-              </span>
-              <span className='bg-[#F4F1EA] text-gray-900 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full'>
-                + FREE SHIPPING
-              </span>
-            </div>
-
-            {/* COLOUR SELECTOR */}
-            <div className='space-y-4 pt-2 border-t border-gray-100'>
-              <p className='text-xs font-semibold text-gray-700 tracking-wider uppercase'>
-                COLOR: <span className='text-gray-950 font-bold'>{colors[selectedColor].name}</span>
-              </p>
-              <div className='flex gap-3 pt-1'>
+            {/* COLOR SELECTOR */}
+            <div className="space-y-3 pt-3 border-t border-black/[0.06]">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-medium text-neutral-700">Finish</span>
+                <span className="text-neutral-500">{colors[selectedColor].name}</span>
+              </div>
+              <div className="flex gap-3">
                 {colors.map((color, idx) => (
-                  <div key={idx} className='flex flex-col items-center gap-1'>
-                    <button
-                      type='button'
-                      onClick={() => setSelectedColor(idx)}
-                      className={`w-7 h-7 rounded-full ${color.bg} transition-transform cursor-pointer ${
-                        selectedColor === idx ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105'
-                      }`}
-                      aria-pressed={selectedColor === idx}
-                    />
-                  </div>
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedColor(idx)}
+                    className={`w-7 h-7 rounded-full ${color.bg} transition-all cursor-pointer ${
+                      selectedColor === idx ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105 border border-black/10'
+                    }`}
+                    aria-label={color.name}
+                  />
                 ))}
               </div>
             </div>
 
-            {/* GRIDS*/}
-            <div className='space-y-3 pt-2 border-t border-gray-100'>
-              <div className='flex justify-between items-center text-xs font-semibold tracking-wider text-gray-900 uppercase'>                
+            {/* SIZE GRID */}
+            <div className="space-y-3 pt-3 border-t border-black/[0.06]">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-medium text-neutral-700">Select Size (US Men)</span>
+                <span className="text-neutral-400 text-[11px]">True to size</span>
               </div>
 
               <div
-                className='grid grid-cols-4 sm:grid-cols-5 gap-2'
-                role='group'
-                aria-label='Select shoe size'
-                onKeyDown={(e) => {
-                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                    e.preventDefault()
-                    const enabled = MENS_SIZES.filter((s) => !OUT_OF_STOCK_SIZES.includes(s))
-                    const currentIdx = enabled.indexOf(selectedSize)
-                    const next = enabled[(currentIdx + 1) % enabled.length]
-                    if (next !== undefined && !OUT_OF_STOCK_SIZES.includes(next)) {
-                      setSelectedSize(next)
-                    }
-                  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                    e.preventDefault()
-                    const enabled = MENS_SIZES.filter((s) => !OUT_OF_STOCK_SIZES.includes(s))
-                    const currentIdx = enabled.indexOf(selectedSize)
-                    const prev = enabled[(currentIdx - 1 + enabled.length) % enabled.length]
-                    if (prev !== undefined && !OUT_OF_STOCK_SIZES.includes(prev)) {
-                      setSelectedSize(prev)
-                    }
-                  } else if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    if (selectedSize !== null && !OUT_OF_STOCK_SIZES.includes(selectedSize)) {
-                      setSelectedSize(selectedSize)
-                    }
-                  }
-                }}
+                className="grid grid-cols-5 gap-2"
+                role="group"
+                aria-label="Select shoe size"
               >
                 {MENS_SIZES.map((size) => {
                   const isOutOfStock = OUT_OF_STOCK_SIZES.includes(size)
@@ -261,119 +212,88 @@ function ProductDetails() {
                       onClick={() => !isOutOfStock && setSelectedSize(size)}
                       disabled={isOutOfStock}
                       aria-pressed={isSelected || undefined}
-                      aria-disabled={isOutOfStock || undefined}
-                      className={`relative h-11 border rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                      className={`h-11 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center border ${
                         isOutOfStock
-                          ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50'
+                          ? 'border-neutral-200 text-neutral-300 bg-neutral-50 cursor-not-allowed line-through'
                           : isSelected
-                          ? 'bg-[#212121] text-white border-[#212121] shadow-xs ring-1 ring-black'
-                          : 'border-gray-300 text-gray-900 hover:border-black bg-white'
+                          ? 'bg-[#000000] text-white border-[#000000] shadow-xs'
+                          : 'border-neutral-200 hover:border-black text-neutral-800 bg-white'
                       }`}
                     >
                       {size}
-                      {/* OUT OF STOCK INDICATOR*/}
-                      {isOutOfStock && (
-                        <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-                          <div className='w-full border-t border-gray-300 transform -rotate-45' />
-                        </div>
-                      )}
                     </button>
                   )
                 })}
               </div>
-
-              <div className='text-xs tracking-wide text-gray-700 space-y-2 pt-1'>
-                <p>The {product.title} fits true-to-size for most customers.</p>
-              </div>
             </div>
 
-            {/* ADD CART & SAVE FOR LATER */}
-            <div className='pt-2 space-y-2'>
-              <div className='flex justify-center items-center  gap-3'>
+            {/* ACTIONS */}
+            <div className="pt-3 space-y-3">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={handleAddToCart}
                   disabled={!selectedSize}
-                  className={`flex-1 py-4 rounded-full font-bold text-xs sm:text-sm tracking-wider uppercase transition-all duration-200 shadow-sm ${
+                  className={`flex-1 py-4 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300 shadow-sm ${
                     !selectedSize
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
                       : isMaxStockReached
-                      ? 'bg-amber-600 text-white hover:bg-amber-700 cursor-pointer'
-                      : cartQty > 0
-                      ? 'bg-[#212121] text-white hover:bg-black hover:scale-[1.01] active:scale-[0.99] cursor-pointer ring-2 ring-offset-2 ring-[#212121]'
-                      : 'bg-[#212121] text-white hover:bg-black hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
+                      ? 'bg-neutral-800 text-white cursor-not-allowed'
+                      : 'bg-[#000000] hover:bg-black text-white cursor-pointer hover:shadow-md'
                   }`}
                 >
                   {!selectedSize
-                    ? 'SELECT A SIZE'
+                    ? 'Select a Size'
                     : isMaxStockReached
-                    ? `MAX STOCK IN CART (×${cartQty})`
+                    ? 'Maximum Stock Reached'
                     : cartQty > 0
-                    ? `IN CART (×${cartQty}) — ADD ANOTHER`
-                    : `ADD TO CART — $${product.price}`}
+                    ? `In Cart (×${cartQty}) — Add Another`
+                    : `Add to Cart — $${product.price}`}
                 </button>
 
-                {/* SAVE FOR LATER (WISHLIST) BUTTON */}
                 <button
                   onClick={() => toggleWishlist(product)}
-                  className={` h-10 w-10 rounded-full border-2 transition-all flex items-center justify-center cursor-pointer ${
+                  className={`h-12 w-12 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
                     isInWishlist(product.id)
-                      ? 'border-red-500 bg-red-50 text-red-500 hover:bg-red-100'
-                      : 'border-gray-300 bg-white text-gray-700 hover:border-black hover:text-black'
+                      ? 'border-red-400 bg-red-50 text-red-500'
+                      : 'border-neutral-200 text-neutral-600 hover:border-black hover:text-black bg-white'
                   }`}
-                  title={isInWishlist(product.id) ? 'Remove from Save for Later' : 'Save for Later'}
-                  aria-label='Save for Later'
+                  aria-label={isInWishlist(product.id) ? 'Remove from Saved' : 'Save for Later'}
                 >
                   {isInWishlist(product.id) ? (
-                    <FaHeart className='text-lg text-red-500' />
+                    <FaHeart className="text-base text-red-500" />
                   ) : (
-                    <FiHeart className='text-[1rem]' />
+                    <FiHeart className="text-base" />
                   )}
                 </button>
               </div>
 
-              {/* STOCK WARNING ALERT */}
-              {stockWarning && (
-                <div className='p-2.5 bg-amber-50 text-amber-900 border border-amber-200 text-xs text-center rounded-xl font-bold'>
-                  Maximum available stock ({product.stock} items) reached in your cart!
-                </div>
-              )}
-
-              {/* CART QTY INDICATOR */}
-              {cartQty > 0 && !addedToCart && !stockWarning && (
-                <div className='p-2.5 bg-[#F4F1EA] text-gray-700 text-xs tracking-wide text-center rounded-xl font-semibold flex items-center justify-center gap-3'>
-                  <span> {cartQty} of this variant already in your cart</span>
-                  <Link to='/cart' className='underline font-bold text-gray-900 hover:text-black'>
-                    View Cart →
-                  </Link>
-                </div>
-              )}
-
+              {/* Status alerts */}
               {addedToCart && (
-                <div className='p-2.5 bg-green-50 text-green-800 text-xs tracking-wide text-center rounded-xl font-bold flex items-center justify-center gap-3'>
-                  <span>{wasIncrement ? `✓ Added another! Now ×${cartQty} in cart` : '✓ Added to cart!'}</span>
-                  <Link to='/cart' className='underline font-bold text-green-700 hover:text-green-900'>
+                <div className="p-3 bg-neutral-900 text-white text-xs rounded-2xl flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <FiCheck className="text-sm" /> Added to your cart
+                  </span>
+                  <Link to="/cart" className="underline font-semibold hover:text-neutral-300">
                     View Cart →
                   </Link>
                 </div>
               )}
-
-              <p className='text-center text-xs text-gray-700 mt-3'>
-                Free Shipping on Orders over $100
-              </p>
             </div>
 
-            {/* PRODUCT SPECS*/}
-            <div className='pt-4 border-t border-gray-100 space-y-3 text-xs text-gray-700'>
-              <h2 className='font-bold text-gray-950 uppercase tracking-wider'>Product Details</h2>
-              <p className='leading-relaxed text-justify'>{product.description}</p>
+            {/* DETAILS ACCORDION / SPECS */}
+            <div className="pt-6 border-t border-black/[0.06] space-y-3 text-xs text-neutral-600">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-900">
+                Product Details
+              </h2>
+              <p className="leading-relaxed font-light text-neutral-700">
+                {product.description}
+              </p>
               
-              <div className='grid grid-cols-2 gap-2 pt-3 text-gray-600'>
-                <div><span className='font-semibold text-gray-900'>Brand:</span> {product.brand || 'AllShoes'}</div>
-                <div><span className='font-semibold text-gray-900'>Category:</span> {product.category}</div>
-                <div><span className='font-semibold text-gray-900'>Rating:</span> ★ {product.rating}</div>
-                <div><span className='font-semibold text-gray-900'>Stock:</span> {product.stock} left</div>
-                <div><span className='font-semibold text-gray-900'>Warranty:</span> {product.warrantyInformation || '1 year'}</div>
-                <div><span className='font-semibold text-gray-900'>Shipping:</span> {product.shippingInformation || '3-5 days'}</div>
+              <div className="grid grid-cols-2 gap-y-2 pt-2 text-[11px] border-t border-black/[0.04]">
+                <div><span className="font-medium text-neutral-900">Materials:</span> Merino wool & Eucalyptus</div>
+                <div><span className="font-medium text-neutral-900">Warranty:</span> 1 Year Limited</div>
+                <div><span className="font-medium text-neutral-900">Weight:</span> 8.8 oz (Lightweight)</div>
+                <div><span className="font-medium text-neutral-900">Care:</span> Machine Washable</div>
               </div>
             </div>
 
@@ -381,21 +301,31 @@ function ProductDetails() {
 
         </div>
 
-        {/* CUSTOMER REVIEWS*/}
+        {/* CUSTOMER REVIEWS */}
         {product.reviews && product.reviews.length > 0 && (
-          <div className='bg-white rounded-3xl p-6 sm:p-8 space-y-6 mb-5 sm:mb-10 shadow-sm border border-gray-200/70'>
-            <h2 className='text-lg font-bold text-gray-950 uppercase tracking-wider'>
-              Customer Reviews ({product.reviews.length})
-            </h2>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <div className="my-16 pt-12 border-t border-black/[0.06]">
+            <div className="flex justify-between items-baseline mb-8">
+              <div>
+                <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-neutral-400">Feedback</span>
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-neutral-900 mt-0.5">
+                  Verified Reviews ({product.reviews.length})
+                </h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {product.reviews.map((rev, idx) => (
-                <div key={idx} className='p-4 bg-[#F4F1EA]/60 rounded-2xl space-y-2 border border-gray-200/60'>
-                  <div className='flex items-center justify-between'>
-                    <span className='font-bold text-xs text-gray-900'>{rev.reviewerName}</span>
-                    <span className='text-xs text-amber-500 font-bold'>★ {rev.rating}</span>
+                <div key={idx} className="p-6 bg-[#F5F5F7] rounded-3xl space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-neutral-900">{rev.reviewerName}</span>
+                    <span className="text-neutral-500 font-medium">★ {rev.rating}.0</span>
                   </div>
-                  <p className='text-xs text-gray-700 italic'>"{rev.comment}"</p>
-                  <p className='text-[10px] text-gray-600'>{new Date(rev.date).toLocaleDateString()}</p>
+                  <p className="text-xs text-neutral-700 italic font-light leading-relaxed">
+                    "{rev.comment}"
+                  </p>
+                  <p className="text-[10px] text-neutral-400">
+                    {new Date(rev.date).toLocaleDateString()}
+                  </p>
                 </div>
               ))}
             </div>
@@ -404,8 +334,7 @@ function ProductDetails() {
 
       </div>
 
-      <ProductsDisplay/>    
-
+      <ProductsDisplay />    
     </div>
   )
 }

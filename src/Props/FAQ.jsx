@@ -1,26 +1,27 @@
 import React, { useState } from 'react'
 import { IoIosArrowDown } from 'react-icons/io'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 
-function FAQ({ title, description, headingLevel = 1 }) {
+function FAQ({ title, description }) {
   const [openIndex, setOpenIndex] = useState(0)
+  const shouldReduceMotion = useReducedMotion()
 
   const faqItems = [
     {
-      question: "Do AllShoes run true to size?",
-      answer: "Yes, AllShoes shoes run true to size. For whole-size-only styles, we recommend sizing up if you have wide feet or fall between sizes. Half-size styles, such as Tree Gliders and Tree Dasher 2s, fit your usual size, unless you plan to wear thick socks for hiking or trail running."
+      question: "Do AllShoes fit true to size?",
+      answer: "Yes, our footwear runs true to standard sizing. For whole-size models, we recommend sizing up if you have wider feet or fall between sizes. Half-size styles accommodate your standard sizing with room for natural movement."
     },
     {
-      question: "Are AllShoes shoes wide or narrow?",
-      answer: "AllShoes shoes are designed to accommodate a medium to wide fit. The flexible upper materials stretch naturally to adapt to the shape of your foot for maximum comfort."
+      question: "What width profile do your shoes have?",
+      answer: "AllShoes are built around an anatomical medium-to-wide profile. The natural merino wool and eucalyptus upper stretches gently to match the contours of your foot."
     },
     {
-      question: "How do I clean and care for my AllShoes?",
-      answer: "Most AllShoes are machine washable! Remove the insoles and laces, place your shoes in a mesh laundry bag, and wash on a gentle cycle with cold water and mild detergent. Always air dry your shoes—do not put them in the dryer."
+      question: "How do I care for and clean my pair?",
+      answer: "Most styles are machine washable. Simply remove the insoles and laces, place in a delicate laundry bag, and wash on a gentle cycle with cold water. Allow them to air dry naturally."
     },
     {
-      question: "What is the return and exchange policy?",
-      answer: "We offer a 30-day no-questions-asked return and exchange policy. If you're not completely satisfied with your AllShoes, you can return or exchange them within 30 days of purchase for a full refund."
+      question: "What is your return and trial policy?",
+      answer: "We offer a 30-day trial period with hassle-free returns and exchanges. If your pair is not your ideal fit, return them within 30 days for a full refund."
     }
   ]
 
@@ -28,74 +29,66 @@ function FAQ({ title, description, headingLevel = 1 }) {
     setOpenIndex(openIndex === index ? null : index)
   }
 
-  const defaultDescription = "Find your perfect blend of style and comfort with our collection of shoes for any occasion. From business casual days to meeting up with friends after work to taking on your favorite trail, our shoes provide the ultimate in sustainable support for every step of your day and look incredible while doing so."
+  const defaultDescription = "Designed for daily ease, our footwear brings together natural materials, anatomical support, and understated aesthetic poise."
+  const defaultTitle = "Frequently Asked Questions"
 
-  const defaultTitle = "Frequently asked Questions"
-  const Heading = `h${headingLevel}`
   return (
-    <section className='w-full max-w-4xl mb-5 sm:mb-10 mx-auto px-4 py-12 font-jakarta text-black'>
-      <Heading className='text-center uppercase tracking-[0.25em] text-sm sm:text-base font-semibold text-gray-900 mb-4'>
-        {title || defaultTitle}
-      </Heading>
+    <section className="w-full max-w-3xl mx-auto my-12 px-4 font-jakarta text-[#000000]">
+      <div className="text-center space-y-2 mb-10">
+        
+        <h2 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] text-neutral-900">
+          {title || defaultTitle}
+        </h2>
+        <p className="text-xs sm:text-sm text-neutral-500 font-light max-w-xl mx-auto leading-relaxed">
+          {description || defaultDescription}
+        </p>
+      </div>
 
-      <p className='text-center text-gray-700 text-xs sm:text-sm md:text-base leading-relaxed max-w-3xl mx-auto mb-10'>
-        {description || defaultDescription}
-      </p>
-
-         {/* LINE DIVIDER (TO AVOID CONFUSION) */}
-      <div className='border-b border-gray-400 mb-6' />
-
-      {/* ACCORDION MENU*/}
-      <div className='space-y-4'>
-        {
-        faqItems.map((item, index) => {
+      {/* ACCORDION MENU */}
+      <div className="divide-y divide-black/[0.06] border-y border-black/[0.06]">
+        {faqItems.map((item, index) => {
           const isOpen = openIndex === index
           return (
-            <div key={index} className='border-b border-gray-400 pb-4'>
+            <div key={index} className="py-4">
               <button
-                id={`faq-btn-${index}`}
                 onClick={() => toggleAccordion(index)}
-                className='w-full flex justify-between items-center text-left py-2 focus:outline-none group cursor-pointer'
                 aria-expanded={isOpen}
                 aria-controls={`faq-panel-${index}`}
+                id={`faq-btn-${index}`}
+                className="w-full flex justify-between items-center text-left py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-black rounded-lg cursor-pointer group"
               >
-                <span className='font-medium text-sm sm:text-base text-gray-900 group-hover:text-gray-700 transition-colors'>
+                <span className="font-medium text-sm sm:text-base text-neutral-900 group-hover:text-neutral-600 transition-colors">
                   {item.question}
                 </span>
 
-                {/* ANMATION FOR CONTENT AND ICON */}
                 <motion.span 
                   animate={{ rotate: isOpen ? 180 : 0 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className='w-6 h-6 rounded-full border border-black flex items-center justify-center text-xs text-black shrink-0 ml-4'
+                  transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeInOut' }}
+                  className="w-7 h-7 rounded-full border border-black/10 flex items-center justify-center text-xs text-neutral-600 shrink-0 ml-4 group-hover:border-black/30 transition-colors"
                 >
                   <IoIosArrowDown />
                 </motion.span>
               </button>
 
-              <div
-                id={`faq-panel-${index}`}
-                role='region'
-                aria-labelledby={`faq-btn-${index}`}
-                aria-hidden={!isOpen}
-              >
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      key='content'
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
-                      className='overflow-hidden'
-                    >
-                      <p className='mt-2 pr-8 text-justify text-xs sm:text-sm text-gray-700 leading-relaxed pb-2'>
-                        {item.answer}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    id={`faq-panel-${index}`}
+                    role="region"
+                    aria-labelledby={`faq-btn-${index}`}
+                    key="content"
+                    initial={shouldReduceMotion ? { opacity: 1 } : { height: 0, opacity: 0 }}
+                    animate={shouldReduceMotion ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
+                    exit={shouldReduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <p className="pt-2 pb-3 pr-8 text-xs sm:text-sm text-neutral-600 font-light leading-relaxed">
+                      {item.answer}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )
         })}

@@ -1,18 +1,165 @@
 @import "tailwindcss";
 
 @theme {
-  --font-jakarta: "Plus Jakarta Sans", sans-serif;
+  --color-neutral-900: #000000;
+  --font-jakarta: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Plus Jakarta Sans", sans-serif;
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
 }
 
-*{
-    box-sizing: border-box;
-    font-family: var(--font-jakarta);
+* {
+  box-sizing: border-box;
+  font-family: var(--font-jakarta);
 }
 
-body{
-    background-color: #ECE9E2;
+html {
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-#best-sellers{
-    word-spacing: 5px;
+body {
+  background-color: #FBFBFD;
+  color: #000000;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+button:not(:disabled):hover {
+  cursor: pointer;
+}
+
+button:not(:disabled),
+a {
+  transition-duration: 250ms !important;
+  transition-timing-function: ease-in-out !important;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  button:not(:disabled),
+  a {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+#best-sellers {
+  letter-spacing: 0.08em;
+}
+
+/* Selection highlight */
+::selection {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+@media (min-width: 1600px) {
+  .max-w-7xl {
+    max-width: min(94vw, 96rem);
+  }
+
+  .max-w-6xl {
+    max-width: min(92vw, 88rem);
+  }
+
+  .max-w-5xl {
+    max-width: min(90vw, 80rem);
+  }
+
+  .wide-hero {
+    height: clamp(48rem, 82vh, 70rem);
+  }
+
+  .wide-hero-copy {
+    max-width: 72rem;
+  }
+
+  .wide-hero-copy h1 {
+    font-size: clamp(4.5rem, 5vw, 8rem);
+  }
+
+  .wide-story-panel {
+    height: min(70vh, 58rem);
+  }
+
+  .wide-product-gallery {
+    min-height: clamp(34rem, 38vw, 56rem);
+  }
+
+  .wide-product-image {
+    max-height: min(38vw, 48rem);
+  }
+}
+
+@media (min-width: 1920px) {
+  .max-w-7xl {
+    max-width: min(94vw, 112rem);
+  }
+
+  .max-w-6xl {
+    max-width: min(92vw, 104rem);
+  }
+
+  .max-w-5xl {
+    max-width: min(90vw, 92rem);
+  }
+
+  header[aria-label="Desktop navigation"] {
+    padding-inline: clamp(4rem, 5vw, 9rem);
+  }
+
+  .catalog-grid,
+  .best-seller-skeleton-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 2560px) {
+  .max-w-7xl {
+    max-width: min(92vw, 160rem);
+  }
+
+  .max-w-6xl {
+    max-width: min(90vw, 144rem);
+  }
+
+  .max-w-5xl {
+    max-width: min(88vw, 120rem);
+  }
+
+  .catalog-grid,
+  .best-seller-skeleton-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }

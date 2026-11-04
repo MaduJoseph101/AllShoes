@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '../CartContext'
-import { FiX, FiCheckCircle, FiCreditCard, FiTruck, FiArrowRight, FiArrowLeft, FiUser } from 'react-icons/fi'
-import useFocusTrap from '../useFocusTrap'
+import { FiCheckCircle, FiArrowRight, FiArrowLeft } from 'react-icons/fi'
+import { RxCross2 } from 'react-icons/rx'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -10,8 +10,6 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 
 function CheckoutModal() {
   const { isCheckoutOpen, closeCheckout, subtotal, clearCart, user } = useCart()
-  const modalRef = useRef(null)
-  useFocusTrap(modalRef, isCheckoutOpen, closeCheckout)
   const [step, setStep] = useState(1) // 1: Shipping, 2: Payment, 3: Confirmation
 
   // FORM STATES
@@ -28,7 +26,7 @@ function CheckoutModal() {
     cardCvc: '',
   })
 
-  // Synchronize with registered user in local storage
+  // Synchronize with user profile
   useEffect(() => {
     if (isCheckoutOpen) {
       if (user) {
@@ -42,7 +40,6 @@ function CheckoutModal() {
           phone: user.phone || '',
         }))
       } else {
-        // SHIPPING DETAILS RESET WHEB USER IS REMOVED FROM LOCAL STORAGE
         setFormData((prev) => ({
           ...prev,
           fullName: '',
@@ -55,6 +52,24 @@ function CheckoutModal() {
       }
     }
   }, [isCheckoutOpen, user])
+
+  const handleClose = () => {
+    closeCheckout()
+    if (step === 3) {
+      setStep(1)
+    }
+  }
+
+  // Escape key handler
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isCheckoutOpen) {
+        handleClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isCheckoutOpen])
 
   const [orderId, setOrderId] = useState('')
   const [errors, setErrors] = useState({})
@@ -100,7 +115,6 @@ function CheckoutModal() {
     if (step === 1 && validateStep1()) {
       setStep(2)
     } else if (step === 2 && validateStep2()) {
-      // Complete order
       const generatedId = `ALL-${Math.floor(100000 + Math.random() * 900000)}`
       setOrderId(generatedId)
       setStep(3)
@@ -108,216 +122,165 @@ function CheckoutModal() {
     }
   }
 
-  const handleClose = () => {
-    closeCheckout()
-    // RESET THE STATE AFTER A SUCCESSFUL CHECKOUT
-    if (step === 3) {
-      setStep(1)
-    }
-  }
-
   return (
-    <div className='fixed w-full inset-0 z-50 overflow-y-auto font-jakarta flex items-center justify-center p-4 sm:p-6'>
-      {/* BACKRDROP */}
-      <div className='fixed inset-0 bg-black/60 backdrop-blur-xs' onClick={handleClose} />
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="checkout-title"
+      className="fixed inset-0 z-50 overflow-y-auto font-jakarta flex items-center justify-center p-4 sm:p-6"
+    >
+      {/* BACKDROP */}
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300" onClick={handleClose} />
 
-      {/* MODAL BOX */}
-      <div
-        ref={modalRef}
-        role='dialog'
-        aria-modal='true'
-        aria-labelledby='checkout-modal-title'
-        tabIndex={-1}
-        className='relative bg-[#ECE9E2] rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-gray-300 z-10 max-h-[80vh] flex flex-col sm:my-0 sm:h-[90vh]'
-      >
+      {/* MODAL CARD */}
+      <div className="relative bg-white rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden border border-black/[0.06] z-10 flex flex-col max-h-[90vh]">
         
         {/* HEADER */}
-        <div className='bg-[#212121] text-white p-6 flex items-center justify-between sm:shrink-0'>
+        <div className="p-6 border-b border-black/[0.06] flex items-center justify-between shrink-0">
           <div>
-            <h2 id='checkout-modal-title' data-dialog-initial-focus tabIndex={-1} className='text-lg font-extrabold uppercase tracking-wide'>
-              {step === 3 ? 'Order Confirmed!' : 'Checkout'}
+            <h2 id="checkout-title" className="text-base sm:text-lg font-semibold tracking-tight text-neutral-900">
+              {step === 3 ? 'Order Confirmed' : 'Checkout'}
             </h2>
             {step < 3 && (
-              <p className='text-xs text-gray-300 font-semibold'>
-                Step {step} of 3 — {step === 1 ? 'Shipping Address' : 'Payment Details'}
+              <p className="text-xs text-neutral-400 font-light mt-0.5">
+                Step {step} of 2 — {step === 1 ? 'Shipping Destination' : 'Payment Details'}
               </p>
-
             )}
           </div>
           <button
             onClick={handleClose}
-            className='text-gray-300 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer'
-            aria-label='Close checkout'
+            className="p-1.5 text-neutral-400 hover:text-black rounded-full hover:bg-neutral-100 transition-colors cursor-pointer"
+            aria-label="Close checkout"
           >
-            <FiX className='text-xl' />
+            <RxCross2 className="text-lg" />
           </button>
         </div>
 
-        {/* STEP 1 & 2 PROGRESS BAR */}
+        {/* STEP PROGRESS */}
         {step < 3 && (
-          <div className='bg-white px-4 sm:px-6 py-5 border-b border-gray-200 flex flex-wrap justify-between items-center gap-x-1.5 sm:gap-x-2 gap-y-1 text-[10px] sm:text-xs font-bold uppercase tracking-wide sm:tracking-wider text-gray-500'>
-            <span className={`flex items-center gap-1.5 shrink-0 ${step >= 1 ? 'text-black' : ''}`}>
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0 ${step >= 1 ? 'bg-black text-white' : 'bg-gray-200'}`}>1</span>
+          <div className="bg-[#FBFBFD] px-6 py-3 border-b border-black/[0.04] flex items-center gap-6 text-xs text-neutral-500">
+            <span className={`flex items-center gap-2 ${step >= 1 ? 'text-black font-medium' : ''}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 1 ? 'bg-black text-white' : 'bg-neutral-200'}`}>1</span>
               Shipping
             </span>
-            <span className={`flex items-center gap-1.5 shrink-0 ${step >= 2 ? 'text-black' : ''}`}>
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0 ${step >= 2 ? 'bg-black text-white' : 'bg-gray-200'}`}>2</span>
+            <span className="text-neutral-300">/</span>
+            <span className={`flex items-center gap-2 ${step >= 2 ? 'text-black font-medium' : ''}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 2 ? 'bg-black text-white' : 'bg-neutral-200'}`}>2</span>
               Payment
-            </span>
-            <span className='flex items-center gap-1.5 shrink-0 opacity-50'>
-              <span className='w-5 h-5 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-[10px] shrink-0'>3</span>
-              Confirmation
             </span>
           </div>
         )}
 
-        <div className='p-6 sm:p-8 space-y-6 flex-1 min-h-0 overflow-y-auto'>
+        <div className="p-6 sm:p-8 space-y-6 flex-1 overflow-y-auto">
           
           {/* STEP 1: SHIPPING FORM */}
           {step === 1 && (
-            <div className='space-y-4'>
-              <div className='flex items-center justify-between'>
-                <h3 className='text-sm px-1 font-extrabold uppercase tracking-wider text-gray-900 flex items-center gap-2'>
-                  Shipping Details
-                </h3>
-            
-              </div>
-
-              {user && (
-                <div className='bg-white/80 border border-gray-200 rounded-2xl p-3 px-4 flex items-center justify-between text-xs text-gray-600'>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-7 h-7 rounded-full bg-black text-white flex items-center justify-center font-bold text-[10px] uppercase'>
-                      {user.fullName ? user.fullName.charAt(0) : 'U'}
-                    </div>
-                    <div>
-                      <p className='font-bold text-gray-900 leading-tight'>{user.fullName || 'Registered User'}</p>
-                      <p className='text-[10px] text-gray-500'>{user.email}</p>
-                    </div>
-                  </div>
-                  
-                </div>
-              )}
-
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor='fullName' className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                  <label htmlFor="fullName" className="block text-xs font-medium text-neutral-700 mb-1">
                     Full Name *
                   </label>
                   <input
-                    id='fullName'
-                    type='text'
-                    name='fullName'
+                    id="fullName"
+                    type="text"
+                    name="fullName"
                     value={formData.fullName}
                     onChange={handleInputChange}
-                    placeholder='John Doe'
-                    aria-describedby={errors.fullName ? 'checkout-fullName-error' : undefined}
-                    aria-invalid={Boolean(errors.fullName)}
-                    className={`w-full bg-white border ${errors.fullName ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
+                    placeholder="Jane Doe"
+                    aria-describedby={errors.fullName ? "fullName-err" : undefined}
+                    aria-invalid={!!errors.fullName}
+                    className={`w-full bg-[#F5F5F7] border ${errors.fullName ? 'border-red-400' : 'border-transparent'} rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all`}
                   />
-                  {errors.fullName && <p id='checkout-fullName-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.fullName}</p>}
+                  {errors.fullName && <p id="fullName-err" className="text-[10px] text-red-500 mt-1">{errors.fullName}</p>}
                 </div>
 
                 <div>
-                  <label htmlFor='email' className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                  <label htmlFor="email" className="block text-xs font-medium text-neutral-700 mb-1">
                     Email Address *
                   </label>
                   <input
-                    id='email'
+                    id="email"
                     required
-                    type='email'
-                    name='email'
+                    type="email"
+                    name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder='john@example.com'
-                    aria-describedby={errors.email ? 'checkout-email-error' : undefined}
-                    aria-invalid={Boolean(errors.email)}
-                    className={`w-full bg-white border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
+                    placeholder="jane@example.com"
+                    aria-describedby={errors.email ? "email-err" : undefined}
+                    aria-invalid={!!errors.email}
+                    className={`w-full bg-[#F5F5F7] border ${errors.email ? 'border-red-400' : 'border-transparent'} rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all`}
                   />
-                  {errors.email && <p id='checkout-email-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.email}</p>}
+                  {errors.email && <p id="email-err" className="text-[10px] text-red-500 mt-1">{errors.email}</p>}
                 </div>
 
-                <div className='sm:col-span-2'>
-                  <label htmlFor='address' className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                <div className="sm:col-span-2">
+                  <label htmlFor="address" className="block text-xs font-medium text-neutral-700 mb-1">
                     Street Address *
                   </label>
                   <input
-                    id='address'
-                    type='text'
-                    name='address'
+                    id="address"
+                    type="text"
+                    name="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    placeholder='123 Main St, Apt 4B'
-                    aria-describedby={errors.address ? 'checkout-address-error' : undefined}
-                    aria-invalid={Boolean(errors.address)}
-                    className={`w-full bg-white border ${errors.address ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
+                    placeholder="123 Serenity Blvd, Suite 4"
+                    aria-describedby={errors.address ? "address-err" : undefined}
+                    aria-invalid={!!errors.address}
+                    className={`w-full bg-[#F5F5F7] border ${errors.address ? 'border-red-400' : 'border-transparent'} rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all`}
                   />
-                  {errors.address && <p id='checkout-address-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.address}</p>}
+                  {errors.address && <p id="address-err" className="text-[10px] text-red-500 mt-1">{errors.address}</p>}
                 </div>
 
                 <div>
-                  <label htmlFor='city' className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                  <label htmlFor="city" className="block text-xs font-medium text-neutral-700 mb-1">
                     City *
                   </label>
                   <input
-                    id='city'
-                    type='text'
-                    name='city'
+                    id="city"
+                    type="text"
+                    name="city"
                     value={formData.city}
                     onChange={handleInputChange}
-                    placeholder='New York'
-                    aria-describedby={errors.city ? 'checkout-city-error' : undefined}
-                    aria-invalid={Boolean(errors.city)}
-                    className={`w-full bg-white border ${errors.city ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
+                    placeholder="Stockholm"
+                    aria-describedby={errors.city ? "city-err" : undefined}
+                    aria-invalid={!!errors.city}
+                    className={`w-full bg-[#F5F5F7] border ${errors.city ? 'border-red-400' : 'border-transparent'} rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all`}
                   />
-                  {errors.city && <p id='checkout-city-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.city}</p>}
+                  {errors.city && <p id="city-err" className="text-[10px] text-red-500 mt-1">{errors.city}</p>}
                 </div>
 
                 <div>
-                  <label htmlFor='zip' className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
-                    ZIP / Postal Code *
+                  <label htmlFor="zip" className="block text-xs font-medium text-neutral-700 mb-1">
+                    ZIP Code *
                   </label>
                   <input
-                    id='zip'
-                    type='text'
-                    name='zip'
+                    id="zip"
+                    type="text"
+                    name="zip"
                     value={formData.zip}
                     onChange={handleInputChange}
-                    placeholder='10001'
-                    aria-describedby={errors.zip ? 'checkout-zip-error' : undefined}
-                    aria-invalid={Boolean(errors.zip)}
-                    className={`w-full bg-white border ${errors.zip ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors`}
+                    placeholder="111 22"
+                    aria-describedby={errors.zip ? "zip-err" : undefined}
+                    aria-invalid={!!errors.zip}
+                    className={`w-full bg-[#F5F5F7] border ${errors.zip ? 'border-red-400' : 'border-transparent'} rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all`}
                   />
-                  {errors.zip && <p id='checkout-zip-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.zip}</p>}
-                </div>
-
-                <div className='sm:col-span-2'>
-                  <label htmlFor='phone' className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
-                    Phone Number (Optional)
-                  </label>
-                  <input
-                    id='phone'
-                    type='tel'
-                    name='phone'
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder='+1 (555) 000-0000'
-                    className='w-full bg-white border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
-                  />
+                  {errors.zip && <p id="zip-err" className="text-[10px] text-red-500 mt-1">{errors.zip}</p>}
                 </div>
               </div>
 
-              {/* ORDER SUMMARRY */}
-              <div className='bg-white p-4 rounded-2xl border border-gray-200 space-y-2 text-xs text-gray-700 mt-4'>
-                <div className='flex justify-between font-semibold'>
-                  <span>Items Subtotal:</span>
-                  <span>{currencyFormatter.format(subtotal)}</span>
+              {/* Order summary tile */}
+              <div className="bg-[#F5F5F7] p-4 rounded-2xl space-y-2 text-xs text-neutral-600 mt-4">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span className="font-medium text-neutral-900">{currencyFormatter.format(subtotal)}</span>
                 </div>
-                <div className='flex justify-between font-semibold'>
-                  <span>Shipping:</span>
-                  <span>{shippingCost === 0 ? 'FREE' : currencyFormatter.format(shippingCost)}</span>
+                <div className="flex justify-between">
+                  <span>Shipping</span>
+                  <span className="font-medium text-neutral-900">{shippingCost === 0 ? 'Free' : currencyFormatter.format(shippingCost)}</span>
                 </div>
-                <div className='flex justify-between font-bold text-gray-950 text-sm pt-2 border-t border-gray-100'>
-                  <span>Order Total:</span>
+                <div className="flex justify-between text-neutral-900 font-semibold pt-2 border-t border-black/[0.06]">
+                  <span>Total Due</span>
                   <span>{currencyFormatter.format(total)}</span>
                 </div>
               </div>
@@ -326,141 +289,112 @@ function CheckoutModal() {
 
           {/* STEP 2: PAYMENT FORM */}
           {step === 2 && (
-            <div className='space-y-4'>
-              <h3 className='text-sm font-extrabold uppercase tracking-wider text-gray-900 flex items-center gap-2'>
-                Select Payment Method
-              </h3>
-
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3'>
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-2">
                 {['card', 'paypal', 'cod'].map((method) => (
                   <button
                     key={method}
-                    type='button'
+                    type="button"
                     onClick={() => setFormData((prev) => ({ ...prev, paymentMethod: method }))}
-                    className={`p-3 rounded-2xl border text-xs font-bold uppercase tracking-wider text-center transition-all cursor-pointer ${
+                    className={`p-3 rounded-2xl text-xs font-medium text-center transition-all cursor-pointer border ${
                       formData.paymentMethod === method
-                        ? 'border-black bg-black text-white shadow-xs'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                        ? 'border-black bg-black text-white shadow-2xs'
+                        : 'border-black/[0.08] bg-[#F5F5F7] text-neutral-700 hover:bg-neutral-200'
                     }`}
                   >
                     {method === 'card' && 'Credit Card'}
                     {method === 'paypal' && 'PayPal'}
-                    {method === 'cod' && 'Cash on Delivery'}
+                    {method === 'cod' && 'Delivery'}
                   </button>
                 ))}
               </div>
 
               {formData.paymentMethod === 'card' && (
-                <div className='space-y-3 bg-white p-5 rounded-2xl border border-gray-200'>
+                <div className="space-y-3 bg-[#F5F5F7] p-5 rounded-2xl">
                   <div>
-                    <label htmlFor='cardNumber' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                    <label htmlFor="cardNumber" className="block text-xs font-medium text-neutral-700 mb-1">
                       Card Number *
                     </label>
                     <input
-                      id='cardNumber'
-                      type='text'
-                      name='cardNumber'
+                      id="cardNumber"
+                      type="text"
+                      name="cardNumber"
                       value={formData.cardNumber}
                       onChange={handleInputChange}
-                      placeholder='4532 •••• •••• 8921'
+                      placeholder="4532 •••• •••• 8921"
                       maxLength={19}
-                      aria-describedby={errors.cardNumber ? 'checkout-cardNumber-error' : undefined}
-                      aria-invalid={Boolean(errors.cardNumber)}
-                      className={`w-full bg-[#F4F1EA] border ${errors.cardNumber ? 'border-red-500' : 'border-transparent'} rounded-xl px-4 py-2.5 text-xs outline-none focus:border-black`}
+                      className="w-full bg-white rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-black/10"
                     />
-                    {errors.cardNumber && <p id='checkout-cardNumber-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.cardNumber}</p>}
+                    {errors.cardNumber && <p className="text-[10px] text-red-500 mt-1">{errors.cardNumber}</p>}
                   </div>
 
-                  <div className='grid grid-cols-2 gap-3'>
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label htmlFor='cardExpiry' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor="cardExpiry" className="block text-xs font-medium text-neutral-700 mb-1">
                         Expiry (MM/YY) *
                       </label>
                       <input
-                        id='cardExpiry'
-                        type='text'
-                        name='cardExpiry'
+                        id="cardExpiry"
+                        type="text"
+                        name="cardExpiry"
                         value={formData.cardExpiry}
                         onChange={handleInputChange}
-                        placeholder='12/28'
+                        placeholder="12/28"
                         maxLength={5}
-                        aria-describedby={errors.cardExpiry ? 'checkout-cardExpiry-error' : undefined}
-                        aria-invalid={Boolean(errors.cardExpiry)}
-                        className={`w-full bg-[#F4F1EA] border ${errors.cardExpiry ? 'border-red-500' : 'border-transparent'} rounded-xl px-4 py-2.5 text-xs outline-none focus:border-black`}
+                        className="w-full bg-white rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-black/10"
                       />
-                      {errors.cardExpiry && <p id='checkout-cardExpiry-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.cardExpiry}</p>}
+                      {errors.cardExpiry && <p className="text-[10px] text-red-500 mt-1">{errors.cardExpiry}</p>}
                     </div>
 
                     <div>
-                      <label htmlFor='cardCvc' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
-                        CVC / CVV *
+                      <label htmlFor="cardCvc" className="block text-xs font-medium text-neutral-700 mb-1">
+                        CVC *
                       </label>
                       <input
-                        id='cardCvc'
-                        type='text'
-                        name='cardCvc'
+                        id="cardCvc"
+                        type="text"
+                        name="cardCvc"
                         value={formData.cardCvc}
                         onChange={handleInputChange}
-                        placeholder='382'
+                        placeholder="382"
                         maxLength={4}
-                        aria-describedby={errors.cardCvc ? 'checkout-cardCvc-error' : undefined}
-                        aria-invalid={Boolean(errors.cardCvc)}
-                        className={`w-full bg-[#F4F1EA] border ${errors.cardCvc ? 'border-red-500' : 'border-transparent'} rounded-xl px-4 py-2.5 text-xs outline-none focus:border-black`}
+                        className="w-full bg-white rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-black/10"
                       />
-                      {errors.cardCvc && <p id='checkout-cardCvc-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1'>{errors.cardCvc}</p>}
+                      {errors.cardCvc && <p className="text-[10px] text-red-500 mt-1">{errors.cardCvc}</p>}
                     </div>
                   </div>
-                </div>
-              )}
-
-              {formData.paymentMethod === 'paypal' && (
-                <div className=' p-4 rounded-2xl text-xs font-semibold text-center'>
-                  You will be redirected to PayPal to complete your payment securely.
-                </div>
-              )}
-
-              {formData.paymentMethod === 'cod' && (
-                <div className='p-4 rounded-2xl text-xs font-semibold text-center'>
-                  Pay in cash upon delivery of your order.
                 </div>
               )}
             </div>
           )}
 
-          {/* STEP 3: ORDER CONFIRMATION */}
+          {/* STEP 3: ORDER CONFIRMED */}
           {step === 3 && (
-            <div className='text-center space-y-6 py-4'>
-              <div className='flex justify-center'>
-                <div className='bg-green-100 p-4 rounded-full text-green-600 text-4xl animate-bounce-short'>
-                  <FiCheckCircle />
-                </div>
+            <div className="text-center space-y-6 py-6">
+              <div className="w-14 h-14 bg-neutral-900 text-white rounded-full flex items-center justify-center mx-auto text-2xl shadow-sm">
+                <FiCheckCircle />
               </div>
 
-              <div className='space-y-2'>
-                <h3 className='text-2xl font-extrabold text-gray-950 tracking-tight'>
-                  Thank you for your order!
+              <div className="space-y-1">
+                <h3 className="text-2xl font-semibold tracking-tight text-neutral-900">
+                  Thank you for your order
                 </h3>
-                <p className='text-xs flex flex-col gap-1 gray-600 max-w-md mx-auto'>
-                  Your order has been placed successfully. A confirmation email has been sent to{' '}
-                  <span className='font-bold text-gray-900'>{formData.email || 'your email'}</span>
+                <p className="text-xs text-neutral-500 font-light">
+                  A confirmation receipt has been sent to <span className="font-medium text-neutral-900">{formData.email || 'your email'}</span>.
                 </p>
               </div>
 
-              <div className='bg-white p-6 rounded-2xl border border-gray-200 text-left space-y-3 text-xs'>
-                <div className='flex justify-between border-b border-gray-100 pb-2'>
-                  <span className='font-bold text-gray-500 uppercase tracking-wider'>Order ID:</span>
-                  <span className='font-mono font-extrabold text-gray-950'>{orderId}</span>
+              <div className="bg-[#F5F5F7] p-5 rounded-2xl text-left space-y-2.5 text-xs">
+                <div className="flex justify-between border-b border-black/[0.04] pb-2">
+                  <span className="text-neutral-500">Order Reference</span>
+                  <span className="font-mono font-medium text-neutral-900">{orderId}</span>
                 </div>
-                <div className='flex justify-between border-b border-gray-100 pb-2'>
-                  <span className='font-bold text-gray-500 uppercase tracking-wider'>Shipping To:</span>
-                  <span className='font-bold text-gray-900'>{formData.fullName}, {formData.city}</span>
+                <div className="flex justify-between border-b border-black/[0.04] pb-2">
+                  <span className="text-neutral-500">Delivering To</span>
+                  <span className="font-medium text-neutral-900">{formData.fullName}, {formData.city}</span>
                 </div>
-                <div className='flex justify-between border-b border-gray-100 pb-2'>
-                  <span className='font-bold text-gray-500 uppercase tracking-wider'>Estimated Delivery:</span>
-                  <span className='font-bold text-green-700'>3-5 Business Days</span>
-                </div>
-                <div className='flex justify-between pt-1 text-sm font-extrabold text-gray-950'>
-                  <span>Total Amount Paid:</span>
+                <div className="flex justify-between pt-1 font-semibold text-neutral-900">
+                  <span>Amount Paid</span>
                   <span>{currencyFormatter.format(total)}</span>
                 </div>
               </div>
@@ -469,12 +403,12 @@ function CheckoutModal() {
 
         </div>
 
-        {/* MODAL FOOTER */}
-        <div className='p-6 bg-white border-t border-gray-200 flex justify-between items-center sm:shrink-0'>
+        {/* FOOTER */}
+        <div className="p-6 bg-[#FBFBFD] border-t border-black/[0.06] flex justify-between items-center shrink-0">
           {step > 1 && step < 3 ? (
             <button
               onClick={() => setStep(1)}
-              className='text-xs font-bold uppercase tracking-wider text-gray-700 hover:text-black flex items-center gap-1.5 cursor-pointer'
+              className="text-xs font-medium text-neutral-600 hover:text-black flex items-center gap-1.5 cursor-pointer"
             >
               <FiArrowLeft /> Back
             </button>
@@ -485,15 +419,15 @@ function CheckoutModal() {
           {step < 3 ? (
             <button
               onClick={handleNext}
-              className='bg-[#212121] text-white text-xs font-bold uppercase tracking-wider px-8 py-3.5 rounded-full hover:bg-black transition-all flex items-center gap-2 cursor-pointer shadow-sm ml-auto'
+              className="bg-[#000000] hover:bg-black text-white text-xs font-semibold tracking-wider uppercase px-8 py-3.5 rounded-full transition-all flex items-center gap-2 cursor-pointer shadow-sm ml-auto"
             >
-              {step === 1 ? 'Continue to Payment' : `Pay ${currencyFormatter.format(total)}`}
+              {step === 1 ? 'Continue to Payment' : `Complete ${currencyFormatter.format(total)}`}
               <FiArrowRight />
             </button>
           ) : (
             <button
               onClick={handleClose}
-              className='w-full bg-[#212121] text-white text-xs font-bold uppercase tracking-wider py-4 rounded-full hover:bg-black transition-all cursor-pointer shadow-sm'
+              className="w-full bg-[#000000] hover:bg-black text-white text-xs font-semibold tracking-wider uppercase py-3.5 rounded-full transition-all cursor-pointer shadow-sm"
             >
               Back to Shopping
             </button>

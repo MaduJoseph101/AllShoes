@@ -1,29 +1,33 @@
-import React from 'react'
-import NewArrivals from '../Props/NewArrivals'
+import { Link } from 'react-router-dom'
 
 function Prefooter() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <section className='min-h-[75vh] w-full bg-[#F4F4EC] grid grid-cols-1 sm:grid-cols-2 mb-5 sm:mb-7 overflow-hidden font-jakarta'>
-      <div className='relative min-h-[40vh] sm:min-h-full w-full bg-[url(/model.jpg)] bg-cover bg-center'>
-        <div className='absolute inset-0 bg-gradient-to-b sm:bg-gradient-to-r from-transparent via-transparent to-[#F4F4EC] pointer-events-none' />
-      </div>
-      
-      <div className='flex flex-col justify-center items-start p-8 sm:p-12 lg:p-16 gap-4 sm:gap-6 bg-[#F4F4EC] text-black font-jakarta z-10'>
-        <h2 className='font-jakarta text-2xl sm:text-4xl lg:text-[2.5rem] font-bold leading-[1.15] tracking-tight text-gray-950'>
-          The {currentYear} AllShoes Comfort & Performance Collection
-        </h2>
+    <section className="max-w-7xl mx-auto my-16 px-4 sm:px-6 font-jakarta">
+      <div className="wide-story-panel bg-[#F5F5F7] h-[70vh] rounded-3xl overflow-hidden grid grid-cols-1 sm:grid-cols-2 border border-black/[0.04]">
+        <div className="relative min-h-[360px] sm:min-h-full w-full bg-[url(/model.jpg)] bg-cover bg-center">
+          <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-transparent to-[#F5F5F7]/30" />
+        </div>
         
-        <p className='font-jakarta text-sm sm:text-base lg:text-lg text-gray-800 font-normal max-w-lg'>
-          The world's most comfortable footwear, engineered for everyday movement and peak performance.
-        </p>
-        
-        <NewArrivals 
-          NewArrivals='Shop now' 
-          to='/all' 
-          className='!bg-[#111111] !text-white !border-[#111111] hover:!bg-black hover:!scale-[1.02] !rounded-none !w-auto !px-7 !py-3 font-jakarta font-semibold text-sm shadow-sm'
-        />
+        <div className="flex flex-col justify-center items-start p-8 sm:p-12 lg:p-16 gap-5 text-[#000000]">
+         
+
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-[-0.03em] leading-tight text-neutral-900">
+            The {currentYear} Comfort & Performance Collection
+          </h2>
+          
+          <p className="text-sm text-neutral-600 font-light leading-relaxed max-w-md">
+            Footwear engineered for everyday movement. Sustainably crafted with renewable materials for a lighter footprint on the earth.
+          </p>
+          
+          <Link 
+            to="/all" 
+            className="inline-flex items-center justify-center bg-[#000000] hover:bg-black text-white px-8 py-3.5 rounded-full text-xs font-medium tracking-wide shadow-sm hover:shadow transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] mt-2"
+          >
+            Explore the Collection
+          </Link>
+        </div>
       </div>
     </section>
   )

@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FaInstagram, FaPinterestP, FaFacebookF, FaXTwitter, FaTiktok, FaYoutube, FaQ } from "react-icons/fa6"
-import FAQ from './Props/FAQ'
+import { FaInstagram, FaPinterestP, FaFacebookF, FaXTwitter, FaTiktok, FaYoutube } from "react-icons/fa6"
 
 function Footer() {
   const [email, setEmail] = useState('')
@@ -13,177 +12,163 @@ function Footer() {
   }
 
   return (
-    <footer className='bg-black font-jakarta min-h-[65vh] text-white py-12 px-6 sm:px-10 font-jakarta border-t border-gray-800'>
-      <div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8'>
+    <footer className="bg-[#000000] text-white py-16 px-6 sm:px-12 font-jakarta border-t border-white/[0.08]">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
         
-        {/* LEFT SECTION LINKS */}
-        <div className='lg:col-span-5 flex flex-col justify-between space-y-10'>
+        {/* LEFT SECTION: NEWSLETTER & SOCIAL */}
+        <div className="lg:col-span-5 flex flex-col justify-between space-y-10">
           <div>
-            <h2 className='text-xs sm:text-sm font-semibold tracking-wider uppercase mb-4 text-white'>
-              SUBSCRIBE TO OUR EMAILS
-            </h2>
-            <form onSubmit={handleSignupSubmit} className='bg-white rounded-2xl flex items-center px-4 py-3.5 max-w-md w-full shadow-sm'>
+            <h3 className="text-xs font-semibold tracking-[0.2em] uppercase mb-3 text-neutral-300">
+              Subscribe to Updates
+            </h3>
+            <p className="text-xs text-neutral-400 font-light mb-4 max-w-sm">
+              Be the first to know about new collection drops, material innovations, and quiet releases.
+            </p>
+            <form onSubmit={handleSignupSubmit} className="bg-white/10 border border-white/15 rounded-full flex items-center px-4 py-2 max-w-sm w-full focus-within:border-white/40 transition-colors">
               <input
-                type='email'
-                placeholder='Email Address'
-                aria-label='Email address for newsletter'
+                type="email"
+                placeholder="Enter your email"
+                aria-label="Email address for newsletter"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className='bg-transparent outline-none text-black text-xs sm:text-sm flex-1 pr-2 placeholder-gray-500'
+                className="bg-transparent outline-none text-white text-xs flex-1 pr-2 placeholder-neutral-400"
               />
               <button 
-                type='submit' 
-                className='text-black font-bold text-xs sm:text-[12px] uppercase tracking-wider hover:opacity-75 transition-opacity px-2 cursor-pointer'
+                type="submit" 
+                className="text-black bg-white hover:bg-neutral-200 font-medium text-xs px-4 py-1.5 rounded-full transition-colors cursor-pointer"
               >
-                SIGN UP
+                Join
               </button>
             </form>
           </div>
 
           <div>
-            <h2 className='text-xs sm:text-sm  font-semibold tracking-wider uppercase mb-4 text-white'>
-              FOLLOW US</h2>
-            <div className='flex items-center gap-3 flex-wrap'>
-              <Link to="" className='w-9 h-9 sm:w-11 sm:h-11 rounded-full border border-white/80 flex items-center justify-center text-base text-white hover:bg-white hover:text-[#000000] transition-all duration-200' aria-label="Instagram">
-                <FaInstagram className='text-[1rem] sm:text-[1.3rem]' />
-              </Link>
-              <Link to="" className='w-9 h-9 sm:w-11 sm:h-11 rounded-full border border-white/80 flex items-center justify-center text-base text-white hover:bg-white hover:text-[#000000] transition-all duration-200' aria-label="Pinterest">
-                <FaPinterestP className='text-[1rem] sm:text-[1.3rem]' />
-              </Link>
-              <Link to="" className='w-9 h-9 sm:w-11 sm:h-11 rounded-full border border-white/80 flex items-center justify-center text-base text-white hover:bg-white hover:text-[#000000]  transition-all duration-200' aria-label="Facebook">
-                <FaFacebookF className='text-[1rem] sm:text-[1.3rem]' />
-              </Link>
-              <Link to="" className='w-9 h-9 sm:w-11 sm:h-11 rounded-full border border-white/80 flex items-center justify-center text-base text-white hover:bg-white hover:text-[#000000] transition-all duration-200' aria-label="X Twitter">
-                <FaXTwitter className='text-[1rem] sm:text-[1.3rem]' />
-              </Link>
-              <Link to="" className='w-9 h-9 sm:w-11 sm:h-11 rounded-full border border-white/80 flex items-center justify-center text-base text-white hover:bg-white hover:text-[#000000]  transition-all duration-200' aria-label="TikTok">
-                <FaTiktok className='text-[1rem] sm:text-[1.3rem]' />
-              </Link>
-              <Link to="" className='w-9 h-9 sm:w-11 sm:h-11 rounded-full border border-white/80 flex items-center justify-center text-base text-white hover:bg-white hover:text-[#000000]  transition-all duration-200' aria-label="YouTube">
-                <FaYoutube className='text-[1rem] sm:text-[1.3rem]' />
-              </Link>
+            <h3 className="text-xs font-semibold tracking-[0.2em] uppercase mb-4 text-neutral-300">
+              Follow AllShoes
+            </h3>
+            <div className="flex items-center gap-3">
+              {[
+                { icon: <FaInstagram />, label: 'Instagram', href: 'https://instagram.com' },
+                { icon: <FaPinterestP />, label: 'Pinterest', href: 'https://pinterest.com' },
+                { icon: <FaFacebookF />, label: 'Facebook', href: 'https://facebook.com' },
+                { icon: <FaXTwitter />, label: 'X', href: 'https://twitter.com' },
+                { icon: <FaTiktok />, label: 'TikTok', href: 'https://tiktok.com' },
+                { icon: <FaYoutube />, label: 'YouTube', href: 'https://youtube.com' },
+              ].map(({ icon, label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center text-xs text-neutral-300 hover:text-white hover:border-white/60 transition-colors"
+                  aria-label={label}
+                >
+                  {icon}
+                </a>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* RIGHT SECTION LINKS */}
-        <div className='lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 text-xs sm:text-sm'>
+        {/* RIGHT SECTION: DIRECTORY LINKS */}
+        <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-8 text-xs font-light text-neutral-400">
           
-          {/* HELP COLUMN */}
+          {/* HELP */}
           <div>
-            <h2 className='font-semibold tracking-wider uppercase mb-4 text-white text-xs sm:text-sm'>
-              HELP
-            </h2>
-            <ul className='space-y-2.5 text-gray-300'>
+            <h3 className="font-medium tracking-wide uppercase mb-4 text-white text-xs">
+              Client Care
+            </h3>
+            <ul className="space-y-2.5">
               <li>
-                <a href="mailto:josephmadu774@gmail.com" className='hover:text-white transition-colors duration-150 block'>
-                  @allshoesgmail.com
+                <a href="mailto:support@allshoes.com" className="hover:text-white transition-colors">
+                  Contact Support
                 </a>
               </li>
               <li>
-                <Link to="/faq" className='hover:text-white transition-colors duration-150 block'>
-                  FAQ/Contact Us
+                <Link to="/faq" className="hover:text-white transition-colors">
+                  FAQs & Sizing
                 </Link>
               </li>
               <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block'>
-                  Returns/Exchanges
+                <Link to="/faq" className="hover:text-white transition-colors">
+                  Returns & Exchanges
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* SHOP COLUMN */}
+          {/* SHOP */}
           <div>
-            <h2 className='font-semibold tracking-wider uppercase mb-4 text-white text-xs sm:text-sm'>
-              SHOP
-            </h2>
-            <ul className='space-y-2.5 text-gray-300'>
+            <h3 className="font-medium tracking-wide uppercase mb-4 text-white text-xs">
+              Explore
+            </h3>
+            <ul className="space-y-2.5">
               <li>
-                <Link to="/men" className='hover:text-white transition-colors duration-150 block'>
+                <Link to="/all" className="hover:text-white transition-colors">
+                  All Footwear
+                </Link>
+              </li>
+              <li>
+                <Link to="/men" className="hover:text-white transition-colors">
                   Men's Shoes
                 </Link>
               </li>
               <li>
-                <Link to="/women" className='hover:text-white transition-colors duration-150 block'>
+                <Link to="/women" className="hover:text-white transition-colors">
                   Women's Shoes
                 </Link>
               </li>
-
-              <li>
-                <Link to="/all" className='hover:text-white transition-colors duration-150 block'>
-                Shop all
-                </Link>
-              </li>
             </ul>
           </div>
 
-          {/* COMPANY COLUMN */}
+          {/* COMPANY */}
           <div>
-            <h2 className='font-semibold tracking-wider uppercase mb-4 text-white text-xs sm:text-sm'>
-              COMPANY
-            </h2>
-            <ul className='space-y-2.5 text-gray-300'>
+            <h3 className="font-medium tracking-wide uppercase mb-4 text-white text-xs">
+              Craft
+            </h3>
+            <ul className="space-y-2.5">
               <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block'>
-                  Our Story
+                <Link to="/faq" className="hover:text-white transition-colors">
+                  Natural Materials
                 </Link>
               </li>
               <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block'>
-                  Our Materials
+                <Link to="/faq" className="hover:text-white transition-colors">
+                  Shoe Care Guide
                 </Link>
               </li>
               <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block'>
-                  Materials &amp; Making
-                </Link>
-              </li>
-              <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block'>
-                  Shoe Care
-                </Link>
-              </li>
-              <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block'>
-                  Press
-                </Link>
-              </li>
-              <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block leading-tight'>
-                  AllShoes Responsible Disclosure Program
-                </Link>
-              </li>
-              <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block leading-tight'>
-                  California Transparency Act
-                </Link>
-              </li>
-              <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block'>
-                  Community Offers
+                <Link to="/faq" className="hover:text-white transition-colors">
+                  Sustainability
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* BLOG COLUMN */}
-          <div className='pt-0 sm:pt-[2.25rem]'>
-            <ul className='space-y-2.5 text-gray-300'>
+          {/* LEGAL */}
+          <div>
+            <h3 className="font-medium tracking-wide uppercase mb-4 text-white text-xs">
+              Legal
+            </h3>
+            <ul className="space-y-2.5">
               <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block'>
-                  Our Blog
-                </Link>
+                <span className="text-neutral-500">Privacy Policy</span>
               </li>
               <li>
-                <Link to="" className='hover:text-white transition-colors duration-150 block'>
-                  Patents
-                </Link>
+                <span className="text-neutral-500">Terms of Service</span>
+              </li>
+              <li>
+                <span className="text-neutral-500">Cookie Settings</span>
               </li>
             </ul>
           </div>
 
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between text-[11px] text-neutral-500 font-light gap-4">
+        <p>© {new Date().getFullYear()} AllShoes, Inc. All rights reserved.</p>
+        <p>Engineered for serene movement.</p>
       </div>
     </footer>
   )

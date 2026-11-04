@@ -22,54 +22,56 @@ const SECTIONS = [
     title: 'Athletic & Performance',
     tag: 'Performance Series',
   },
-  
 ]
 
 function Display() {
   return (
     <section 
       aria-label="Featured Collections" 
-      className='min-h-[70dvh] sm:min-h-[130vh] lg:min-h-[95vh] py-6 px-3 mb-7 grid grid-cols-1 lg:grid-cols-3 gap-5 w-full font-jakarta'
+      className="max-w-7xl mx-auto my-12 px-4 sm:px-6 font-jakarta"
     >
-      {SECTIONS.map((box) => (
-        <div 
-          key={box.id} 
-          className='group rounded-3xl relative overflow-hidden min-h-[360px] sm:min-h-0 border border-black/10 shadow-sm hover:shadow-2xl hover:border-black/0 transition-all duration-500 ease-out'
-        >
-          <img 
-            src={box.bgImage} 
-            alt={box.alt} 
-            // loading='eager'
-            decoding='async'
-            className='absolute inset-0 h-full w-full object-center object-cover brightness-95 group-hover:brightness-100 group-hover:scale-110 transition-transform delay-100 duration-700 ease-out' 
-          />         
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+        {SECTIONS.map((box) => (
+          <div 
+            key={box.id} 
+            className="group rounded-3xl relative overflow-hidden min-h-[500px] flex flex-col justify-between p-8 bg-neutral-900 shadow-sm hover:shadow-xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          >
+            <img 
+              src={box.bgImage} 
+              alt={box.alt} 
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-center object-cover brightness-[0.88] group-hover:brightness-95 group-hover:scale-[1.04] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" 
+            />         
 
-          <div className='absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-black/0 z-0 pointer-events-none transition-opacity duration-300' />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10 z-0 pointer-events-none" />
 
-          <div className='flex flex-col justify-between h-full w-full z-10 relative p-6'>
-            <div className='h-8' />
+            <div className="flex flex-col justify-between h-full w-full z-10 relative">
+              <div>
+                <span className="inline-block text-[10px] font-semibold tracking-[0.2em] uppercase text-white/80 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/15">
+                  {box.tag}
+                </span>
+              </div>
 
-            <div className='text-center my-auto px-2'>
-              <h2 className='font-jakarta text-2xl lg:text-3xl uppercase text-white font-extrabold tracking-tight text-center drop-shadow-md group-hover:scale-[1.02] transition-transform duration-300'>
-                {box.title}
-              </h2>
-            </div>
+              <div className="space-y-4 pt-12">
+                <h2 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] text-white">
+                  {box.title}
+                </h2>
 
-            <div className='w-full flex justify-between items-center gap-3 sm:gap-4 pt-4'>
-              <MenButton 
-                className='!bg-white !text-black !border-white hover:!bg-black hover:!text-white hover:!border-black shadow-md font-jakarta text-xs sm:text-sm font-bold py-2 px-4 rounded-full transition-all duration-300 w-full flex justify-center' 
-                MenButton='Shop Men' 
-                to='/men'
-              />
-              <MenButton 
-                className='!bg-white !text-black !border-white hover:!bg-black hover:!text-white hover:!border-black shadow-md font-jakarta text-xs sm:text-sm font-bold py-2 px-4 rounded-full transition-all duration-300 w-full flex justify-center' 
-                MenButton='Shop Women' 
-                to='/women'
-              />
+                <div className="flex items-center gap-3 pt-2">
+                  <MenButton 
+                    MenButton="Shop Men" 
+                    to="/men"
+                  />
+                  <MenButton 
+                    MenButton="Shop Women" 
+                    to="/women"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </section>
   )
 }

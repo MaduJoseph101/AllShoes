@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../CartContext'
-import { FiHeart, FiTrash2, FiArrowLeft, FiShoppingBag } from 'react-icons/fi'
+import { FiHeart, FiArrowLeft } from 'react-icons/fi'
 import { FaHeart } from 'react-icons/fa'
 import FadeIn from '../FadeIn'
 
@@ -15,22 +15,22 @@ function SavedItems() {
 
   if (wishlistItems.length === 0) {
     return (
-      <div className='min-h-[80vh] bg-[#ECE9E2] font-jakarta flex flex-col items-center justify-center px-4 py-16'>
-        <div className='bg-white rounded-3xl p-10 sm:p-14 max-w-md w-full text-center space-y-6 shadow-sm border border-gray-200/70'>
-          <div className='flex justify-center'>
-            <div className='bg-red-50 p-6 rounded-full text-red-500'>
-              <FiHeart className='text-3xl' />
+      <div className="min-h-[80vh] bg-[#FBFBFD] font-jakarta flex flex-col items-center justify-center px-4 py-16">
+        <div className="bg-white rounded-3xl p-10 sm:p-14 max-w-md w-full text-center space-y-6 shadow-sm border border-neutral-300">
+          <div className="flex justify-center">
+            <div className="bg-[#F5F5F7] p-6 rounded-full text-neutral-400">
+              <FiHeart className="text-3xl" />
             </div>
           </div>
-          <div className='space-y-2'>
-            <h1 className='text-2xl font-extrabold text-gray-950 tracking-tight'>No Saved Items Yet</h1>
-            <p className='text-sm text-gray-500 leading-relaxed'>
-              Tap the heart icon on any shoe to save your favorite styles for later.
+          <div className="space-y-2">
+            <h1 className="text-xl sm:text-2xl font-semibold text-neutral-900 tracking-tight">No Saved Items</h1>
+            <p className="text-xs sm:text-sm text-neutral-500 font-light leading-relaxed">
+              Save your favorite silhouettes while exploring to revisit or compare them later.
             </p>
           </div>
           <Link
-            to='/all'
-            className='inline-block bg-[#212121] text-white font-bold text-xs tracking-wider uppercase px-8 py-4 rounded-full hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-sm'
+            to="/all"
+            className="inline-block bg-[#000000] hover:bg-black text-white font-medium text-xs tracking-wider uppercase px-8 py-3.5 rounded-full transition-all duration-200 shadow-sm"
           >
             Explore Collection
           </Link>
@@ -41,147 +41,81 @@ function SavedItems() {
 
   return (
     <FadeIn>
-      <div className='min-h-screen bg-[#ECE9E2] font-jakarta py-8 px-4 sm:px-8'>
-      <div className='max-w-6xl mx-auto space-y-6'>
+      <div className="min-h-screen bg-[#FBFBFD] font-jakarta py-10 px-4 sm:px-8">
+        <div className="max-w-6xl mx-auto space-y-8">
 
-        {/* HEADER */}
-        <div className='flex flex-wrap items-center justify-between gap-4 border-b border-gray-300/80 pb-4'>
-          <Link
-            to='/all'
-            className='inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 hover:text-black transition-colors'
-          >
-            <FiArrowLeft className='text-xs' />
-            Continue Shopping
-          </Link>
+          {/* HEADER */}
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-black/[0.06] pb-4">
+            <Link
+              to="/all"
+              className="inline-flex items-center gap-2 text-xs font-medium text-neutral-500 hover:text-black transition-colors"
+            >
+              <FiArrowLeft className="text-xs" /> Continue Shopping
+            </Link>
 
-          <div className='flex items-center gap-2'>
-            <h1 className='text-[15px ] sm:text-[1rem] flex gap-2 font-extrabold text-gray-950 tracking-tight uppercase'>
-              Saved Items <span className='text-gray-600 font-bold'>({wishlistItems.length})</span>
+            <h1 className="text-base sm:text-lg font-semibold text-neutral-900 tracking-tight">
+              Saved Styles <span className="text-neutral-400 font-normal">({wishlistItems.length})</span>
             </h1>
           </div>
-        </div>
 
-        {/* RESPONSIVE GRID */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6'>
-          {wishlistItems.map((item) => (
-            <Fragment key={item.id}>
-
-            {/* MOBILE */}
-            <div className='sm:hidden bg-white rounded-3xl p-4 flex gap-4 shadow-sm border border-gray-200/70'>
-              {/* THUMBNAIL */}
-              <Link to={`/productdetails/${item.id}`} className='flex-shrink-0'>
-                <div className='w-20 h-20 bg-[#F4F1EA] rounded-2xl flex items-center justify-center overflow-hidden'>
-                  <img
-                    src={item.thumbnail}
-                    alt={item.title}
-                    className='w-full h-full object-contain p-1.5'
-                  />
-                </div>
-              </Link>
-
-              {/* DETAILS */}
-              <div className='flex-1 min-w-0 flex flex-col justify-between'>
-                <div>
-                  <div className='flex items-start justify-between gap-2'>
-                    <Link
-                      to={`/productdetails/${item.id}`}
-                      className='text-sm font-bold text-gray-950 tracking-tight line-clamp-2 hover:underline'
-                    >
-                      {item.title}
-                    </Link>
+          {/* RESPONSIVE GRID */}
+          <div className="catalog-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {wishlistItems.map((item) => (
+              <Fragment key={item.id}>
+                <div className="group flex flex-col justify-between bg-white rounded-3xl p-3 border border-neutral-300 hover:border-neutral-900 shadow-xs hover:shadow-lg transition-all duration-300">
+                  {/* PEDESTAL */}
+                  <div className="relative bg-[#F5F5F7] rounded-2xl p-5 aspect-square flex items-center justify-center overflow-hidden group-hover:bg-[#ECECEE] transition-all duration-500">
                     <button
                       onClick={() => toggleWishlist(item)}
-                      className='text-red-500 hover:bg-red-500 hover:text-white transition-colors p-1 rounded-full cursor-pointer flex-shrink-0'
-                      title='Remove from saved'
-                      aria-label='Remove from saved'
+                      className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/90 shadow-2xs flex items-center justify-center text-red-500 hover:bg-white transition-colors cursor-pointer border border-black/5"
+                      title="Remove from saved"
+                      aria-label="Remove from saved"
                     >
-                      <FaHeart className='text-xs' />
+                      <FaHeart className="text-xs" />
                     </button>
+
+                    <Link to={`/productdetails/${item.id}`} className="w-full h-full flex items-center justify-center">
+                      <img
+                        src={item.thumbnail}
+                        alt={item.title}
+                        className="max-h-[85%] max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </Link>
                   </div>
 
-                  <div className='flex items-center gap-2 mt-1.5'>
-                    <span className='text-[10px] font-semibold uppercase tracking-wider text-gray-500 bg-[#F4F1EA] px-2 py-0.5 rounded-md'>
-                      {item.brand || 'AllShoes'}
-                    </span>
+                  {/* DETAILS */}
+                  <div className="pt-3 pb-1 px-1.5 space-y-2">
+                    <div>
+                      <span className="text-[10px] font-semibold tracking-wider uppercase text-neutral-400">
+                        {item.brand || 'AllShoes'}
+                      </span>
+                      <Link
+                        to={`/productdetails/${item.id}`}
+                        className="text-xs sm:text-sm font-medium text-neutral-900 truncate block hover:underline"
+                      >
+                        {item.title}
+                      </Link>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs sm:text-sm font-semibold text-neutral-900">
+                        {currencyFormatter.format(item.price)}
+                      </span>
+                      <Link
+                        to={`/productdetails/${item.id}`}
+                        className="text-[11px] font-medium text-neutral-900 underline hover:text-black"
+                      >
+                        View Style →
+                      </Link>
+                    </div>
                   </div>
                 </div>
+              </Fragment>
+            ))}
+          </div>
 
-                <div className='flex flex-wrap items-center justify-between mt-3 gap-2'>
-                  <span className='text-[14px] font-extrabold text-gray-950'>
-                    {currencyFormatter.format(item.price)}
-                  </span>
-
-                  <Link
-                    to={`/productdetails/${item.id}`}
-                    className='ml-auto flex items-center gap-1.5 bg-[#212121] text-white text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full hover:bg-black transition-all cursor-pointer shadow-xs whitespace-nowrap'
-                  >
-                    Add to cart
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/*TABLET & DESKTOP*/}
-            <div
-              className='hidden sm:flex bg-white rounded-3xl p-5 border border-gray-200/70 shadow-sm hover:shadow-md transition-all duration-300 flex-col justify-between group relative'
-            >
-              {/* REMOVE BUTTON */}
-              <button
-                onClick={() => toggleWishlist(item)}
-                className='absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/90 shadow-xs flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-colors cursor-pointer border border-gray-200'
-                title='Remove from saved'
-                aria-label='Remove from saved'
-              >
-                <FaHeart className='text-xs' />
-              </button>
-
-              {/* IMAGE */}
-              <Link to={`/productdetails/${item.id}`} className='block'>
-                <div className='bg-[#F4F1EA] rounded-2xl p-4 flex items-center justify-center min-h-[180px] mb-4 overflow-hidden'>
-                  <img
-                    src={item.thumbnail}
-                    alt={item.title}
-                    className='max-h-36 object-contain group-hover:scale-105 transition-transform duration-300'
-                  />
-                </div>
-              </Link>
-
-              {/* DETAILS */}
-              <div className='space-y-3 px-1 flex-1 flex flex-col justify-between'>
-                <div className=' flex flex-col gap-2'>
-                  <p className='text-[10px] font-bold text-gray-600 uppercase tracking-widest'>
-                    {item.brand || 'AllShoes'}
-                  </p>
-                  <Link
-                    to={`/productdetails/${item.id}`}
-                    className='text-sm font-bold text-gray-950 line-clamp-2 hover:underline tracking-tight'
-                  >
-                    {item.title}
-                  </Link>
-                </div>
-
-                <div className='pt-2 border-t border-gray-100 flex items-center justify-between'>
-                  <span className='text-base font-extrabold text-gray-950'>
-                    {currencyFormatter.format(item.price)}
-                  </span>
-                </div>
-
-                {/* VIEW & CHOOSE SIZE ACTION */}
-                <Link
-                  to={`/productdetails/${item.id}`}
-                  className='w-full py-3 bg-[#212121] text-white text-xs font-bold uppercase tracking-wider rounded-full hover:bg-black transition-all flex items-center justify-center gap-cursor-pointer shadow-xs text-center'
-                >
-                  Add to cart
-                </Link>
-              </div>
-            </div>
-
-            </Fragment>
-          ))}
         </div>
-
       </div>
-    </div>
     </FadeIn>
   )
 }

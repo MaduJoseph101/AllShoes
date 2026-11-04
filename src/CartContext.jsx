@@ -280,13 +280,14 @@ export function CartProvider({ children }) {
     const users = loadUsersDb()
     const emailKey = normalizeEmail(email)
     const found = users.find((u) => normalizeEmail(u.email) === emailKey)
+    const invalidCredentialsMessage = 'Unable to sign in with those details. Please check and try again.'
 
     if (!found) {
-      return { success: false, message: 'No registered account found with this email. Please create an account.' }
+      return { success: false, message: invalidCredentialsMessage }
     }
 
     if (found.password && found.password !== password) {
-      return { success: false, message: 'Incorrect password. Please try again.' }
+      return { success: false, message: invalidCredentialsMessage }
     }
 
     saveActiveUser(found)

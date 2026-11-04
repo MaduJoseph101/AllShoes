@@ -1,16 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useCart } from './CartContext'
 import FadeIn from './FadeIn'
 import useFocusTrap from './useFocusTrap'
 import {
-  FiUser,
-  FiMail,
-  FiLock,
   FiEye,
   FiEyeOff,
-  FiMapPin,
-  FiPhone,
   FiCheckCircle,
   FiTrash2,
   FiEdit3,
@@ -22,6 +17,34 @@ import {
   FiAlertCircle
 } from 'react-icons/fi'
 
+function NotificationToast({ notification, onDismiss }) {
+  if (!notification) return null
+
+  return (
+    <div
+      role={notification.type === 'error' ? 'alert' : 'status'}
+      aria-live={notification.type === 'error' ? 'assertive' : 'polite'}
+      className="fixed top-20 right-6 z-50 max-w-sm p-4 rounded-2xl shadow-xl bg-neutral-900 text-white flex items-center justify-between gap-3"
+    >
+      <div className="flex items-center gap-2.5 text-xs font-medium">
+        {notification.type === 'success' ? (
+          <FiCheckCircle className="text-sm shrink-0 text-emerald-400" />
+        ) : (
+          <FiAlertCircle className="text-sm shrink-0 text-red-400" />
+        )}
+        <span>{notification.message}</span>
+      </div>
+      <button
+        onClick={onDismiss}
+        className="text-white/60 hover:text-white p-1"
+        aria-label="Dismiss notification"
+      >
+        <FiX />
+      </button>
+    </div>
+  )
+}
+
 function Signup() {
   const {
     user,
@@ -30,32 +53,24 @@ function Signup() {
     updateUser,
     deleteUser,
     logoutUser,
-    openCheckout,
     wishlistItems,
     cartItems
   } = useCart()
 
-  const [searchParams] = useSearchParams()
-  const initialTab = searchParams.get('tab') === 'signin' ? 'signin' : 'signup'
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const authMode = tabParam === 'signin' ? 'signin' : 'signup'
 
-  // Tab: 'SINGUP' or 'SIGNIN'
-  const [authMode, setAuthMode] = useState(initialTab)
+  const setAuthMode = (mode) => {
+    setSearchParams({ tab: mode })
+  }
   const [showPassword, setShowPassword] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const deleteDialogRef = useRef(null)
   useFocusTrap(deleteDialogRef, showDeleteConfirm, () => setShowDeleteConfirm(false))
-  const [notification, setNotification] = useState(null) // { type: 'success' | 'error', message: '' }
+  const [notification, setNotification] = useState(null)
 
-  // Sync tab with URL search parameter if changed
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    if (tab === 'signin' || tab === 'signup') {
-      setAuthMode(tab)
-    }
-  }, [searchParams])
-
-  // SIGNUP/SIGNIN
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -66,7 +81,6 @@ function Signup() {
     phone: '',
   })
 
-  // EDIT FORM STATES
   const [editData, setEditData] = useState({
     fullName: '',
     email: '',
@@ -80,10 +94,17 @@ function Signup() {
 
   const showToast = (type, message) => {
     setNotification({ type, message })
-    setTimeout(() => {
+  }
+
+  useEffect(() => {
+    if (!notification) return undefined
+
+    const timeoutId = setTimeout(() => {
       setNotification(null)
     }, 4500)
-  }
+
+    return () => clearTimeout(timeoutId)
+  }, [notification])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -120,7 +141,7 @@ function Signup() {
     }
     updateUser(editData)
     setIsEditing(false)
-    showToast('success', 'Your profile and shipping details have been updated.')
+    showToast('success', 'Profile and address updated.')
   }
 
   const validateSignup = () => {
@@ -181,7 +202,7 @@ function Signup() {
         return
       }
 
-      showToast('success', `Welcome to AllShoes, ${newUser.fullName}! Your account has been created.`)
+      showToast('success', `Welcome to AllShoes, ${newUser.fullName}!`)
       setFormData({
         fullName: '',
         email: '',
@@ -221,7 +242,7 @@ function Signup() {
     deleteUser()
     setShowDeleteConfirm(false)
     setIsEditing(false)
-    showToast('success', 'Your account and personal cart have been permanently deleted.')
+    showToast('success', 'Your account has been deleted.')
   }
 
   const handleSignOut = () => {
@@ -243,115 +264,78 @@ function Signup() {
 
     return (
       <FadeIn>
-        <div className='min-h-[85vh] bg-[#ECE9E2] font-jakarta py-10 px-4 sm:px-8'>
-          <div className='max-w-4xl mx-auto space-y-6'>
+        <div className="min-h-[85vh] bg-[#FBFBFD] font-jakarta py-10 sm:py-12 px-4 sm:px-8">
+          <div className="max-w-5xl mx-auto space-y-8">
 
-            {/* FLOATING TOAST NOTIFICATION */}
-            {notification && (
-              <div
-                role={notification.type === 'error' ? 'alert' : 'status'}
-                aria-live={notification.type === 'error' ? 'assertive' : 'polite'}
-                className={`fixed top-20 left-1/2 right-auto -translate-x-1/2 w-[calc(100%-2rem)] sm:left-auto sm:right-4 sm:translate-x-0 sm:w-auto z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
-                  notification.type === 'success'
-                    ? 'bg-[#212121] text-white border-neutral-700'
-                    : 'bg-red-950 text-red-100 border-red-800'
-                }`}
-              >
-                <div className='flex items-center gap-2.5 text-xs font-semibold'>
-                  {notification.type === 'success' ? (
-                    <FiCheckCircle className='text-base shrink-0 text-white' />
-                  ) : (
-                    <FiAlertCircle className='text-base shrink-0 text-red-400' />
-                  )}
-                  <span>{notification.message}</span>
-                </div>
-                <button
-                  onClick={() => setNotification(null)}
-                  className='text-white/60 hover:text-white p-1 cursor-pointer'
-                >
-                  <FiX />
-                </button>
-              </div>
-            )}
+            <NotificationToast
+              notification={notification}
+              onDismiss={() => setNotification(null)}
+            />
 
-            {/* DASHBOARD HEADER */}
-            <div className='bg-[#212121] text-white rounded-3xl p-6 sm:p-10 shadow-xl border border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-6'>
-              <div className='flex items-center gap-5'>
-                <div className='w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#333] to-[#555] border-2 border-neutral-700 flex items-center justify-center text-white text-2xl font-black shadow-inner'>
+            <header className="space-y-2">
+              
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900">Welcome {user.fullName || 'AllShoes Member'}</h1>
+              <p className="text-sm text-neutral-500">Manage your personal information, delivery details, and saved styles.</p>
+            </header>
+
+            <section aria-labelledby="account-profile-title" className="bg-white rounded-3xl p-5 sm:p-8 border border-neutral-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xl sm:text-2xl font-semibold shrink-0">
                   {initials}
                 </div>
-                <div>
-                  <h1 className='text-xl sm:text-2xl font-black uppercase tracking-tight'>{user.fullName}</h1>
-                  <p className='text-xs sm:text-sm text-gray-300 font-medium'>{user.email}</p>
-                  <p className='text-[11px] text-gray-300 mt-1'>
-                    Member since {user.registeredAt || 'Recently'}
-                  </p>
+                <div className="min-w-0">
+                 
+                  <p className="text-sm text-neutral-500 truncate">{user.email}</p>
+                  <p className="text-xs text-neutral-400 mt-1">Member since {user.registeredAt || 'Recently'}</p>
                 </div>
               </div>
 
-              {/* CTAS */}
-              <div className='flex flex-wrap items-center gap-2.5'>
+              <div className="flex flex-wrap items-center gap-2.5 sm:justify-end">
                 <button
                   onClick={startEditing}
-                  className='inline-flex items-center gap-2 bg-white text-black hover:bg-gray-100 font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-full transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]'
+                  className="inline-flex items-center justify-center gap-2 bg-[#000000] text-white hover:bg-black text-xs font-medium px-5 py-2.5 rounded-full transition-all cursor-pointer shadow-2xs"
                 >
                   <FiEdit3 />
-                  Edit Details
+                  Edit Profile
                 </button>
-
                 <button
                   onClick={handleSignOut}
-                  className='inline-flex items-center gap-2 bg-neutral-800 text-gray-300 hover:text-white hover:bg-neutral-700 border border-neutral-700 font-bold text-xs uppercase tracking-wider px-4 py-3 rounded-full transition-all cursor-pointer'
-                  title='Sign out of this session'
+                  className="inline-flex items-center justify-center gap-2 bg-neutral-100 text-neutral-700 hover:text-black hover:bg-neutral-200 text-xs font-medium px-4 py-2.5 rounded-full transition-all cursor-pointer"
                 >
                   <FiLogOut />
                   Sign Out
                 </button>
-
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className='inline-flex items-center gap-2 bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-600 hover:text-white font-bold text-xs uppercase tracking-wider px-4 py-3 rounded-full transition-all cursor-pointer'
-                  title='Permanently delete account'
-                >
-                  <FiTrash2 />
-                  Delete Account
-                </button>
               </div>
-            </div>
+            </section>
 
-            {/* DELETE ACCOUNT MODAL CONFIRMATION */}
+            {/* DELETE MODAL */}
             {showDeleteConfirm && (
-              <div className='fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4'>
+              <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
                 <div
                   ref={deleteDialogRef}
-                  role='dialog'
-                  aria-modal='true'
-                  aria-labelledby='delete-account-title'
-                  tabIndex={-1}
-                  className='bg-[#ECE9E2] border border-gray-300 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 text-center animate-in fade-in zoom-in-95 duration-200'
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="delete-dialog-title"
+                  className="bg-white border border-black/[0.06] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 text-center"
                 >
-                  {/* <div className='w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-xs'>
-                    <FiTrash2 />
-                  </div> */}
-                  <div className='space-y-2'>
-                    <h2 id='delete-account-title' data-dialog-initial-focus tabIndex={-1} className='text-xl font-black text-gray-950 uppercase tracking-wide'>
+                  <div className="space-y-2">
+                    <h2 id="delete-dialog-title" className="text-lg font-semibold text-neutral-900">
                       Delete Account
                     </h2>
-                    <p className='text-xs text-gray-600 leading-relaxed'>
-                      Are you sure you want to permanently delete your account? This will remove your
-                      saved profile, default shipping address, and your personal cart and wishlist.
+                    <p className="text-xs text-neutral-500 leading-relaxed font-light">
+                      Are you sure you want to delete your profile? This removes your saved shipping information and wishlist permanently.
                     </p>
                   </div>
-                  <div className='flex items-center justify-center gap-4 pt-2'>
+                  <div className="flex items-center justify-center gap-3 pt-2">
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
-                      className='bg-white text-gray-800 font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-full hover:bg-gray-100 transition-colors border border-gray-300 cursor-pointer'
+                      className="bg-neutral-100 text-neutral-700 text-xs font-medium px-6 py-2.5 rounded-full hover:bg-neutral-200 transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleDeleteAccount}
-                      className='bg-red-600 text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-full hover:bg-red-700 transition-colors cursor-pointer shadow-sm'
+                      className="bg-red-600 text-white text-xs font-medium px-6 py-2.5 rounded-full hover:bg-red-700 transition-colors cursor-pointer shadow-sm"
                     >
                       Yes, Delete Account
                     </button>
@@ -360,123 +344,122 @@ function Signup() {
               </div>
             )}
 
-            {/* EDIT PROFILE DRAWER / CARD */}
+            {/* EDIT PROFILE FORM */}
             {isEditing && (
-              <div className='bg-white rounded-3xl p-6 sm:p-8 border border-gray-300/80 shadow-md space-y-6 animate-in fade-in duration-200'>
-                <div className='flex items-center justify-between border-b border-gray-100 pb-4'>
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-neutral-300 shadow-sm space-y-6">
+                <div className="flex items-center justify-between border-b border-black/[0.06] pb-4">
                   <div>
-                    <h2 className='text-base font-black uppercase tracking-wide text-gray-950'>
-                      Edit Profile & Shipping Information
+                    <h2 className="text-base font-semibold text-neutral-900">
+                      Edit Profile & Shipping Destination
                     </h2>
-                    <p className='text-xs text-gray-600'>
-                      Update your account information and default shipping destination.
+                    <p className="text-xs text-neutral-500 font-light">
+                      Update your account contact and default destination.
                     </p>
                   </div>
                   <button
                     onClick={() => setIsEditing(false)}
-                    className='text-gray-600 hover:text-black p-2 rounded-full cursor-pointer'
+                    className="text-neutral-400 hover:text-black p-2 rounded-full cursor-pointer"
+                    aria-label="Close edit mode"
                   >
-                    <FiX className='text-lg' />
+                    <FiX className="text-lg" />
                   </button>
                 </div>
 
-                <form onSubmit={handleSaveEdit} className='space-y-4'>
-                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <form onSubmit={handleSaveEdit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor='profile-fullName' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor="edit-fullName" className="block text-xs font-medium text-neutral-700 mb-1">
                         Full Name *
                       </label>
                       <input
-                        id='profile-fullName'
-                        type='text'
-                        name='fullName'
+                        id="edit-fullName"
+                        type="text"
+                        name="fullName"
                         value={editData.fullName}
                         onChange={handleEditChange}
-                        className='w-full bg-[#ECE9E2]/50 border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
+                        className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
                       />
                     </div>
                     <div>
-                      <label htmlFor='profile-email' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor="edit-email" className="block text-xs font-medium text-neutral-700 mb-1">
                         Email Address *
                       </label>
                       <input
-                        id='profile-email'
-                        type='email'
-                        name='email'
+                        id="edit-email"
+                        type="email"
+                        name="email"
                         value={editData.email}
                         onChange={handleEditChange}
-                        className='w-full bg-[#ECE9E2]/50 border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
+                        className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
                       />
                     </div>
                     <div>
-                      <label htmlFor='profile-phone' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor="edit-phone" className="block text-xs font-medium text-neutral-700 mb-1">
                         Phone Number
                       </label>
                       <input
-                        id='profile-phone'
-                        type='tel'
-                        name='phone'
+                        id="edit-phone"
+                        type="tel"
+                        name="phone"
                         value={editData.phone}
                         onChange={handleEditChange}
-                        placeholder='+1 (555) 000-0000'
-                        className='w-full bg-[#ECE9E2]/50 border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
+                        placeholder="+1 (555) 000-0000"
+                        className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
                       />
                     </div>
                     <div>
-                      <label htmlFor='profile-address' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor="edit-address" className="block text-xs font-medium text-neutral-700 mb-1">
                         Street Address
                       </label>
                       <input
-                        id='profile-address'
-                        type='text'
-                        name='address'
+                        id="edit-address"
+                        type="text"
+                        name="address"
                         value={editData.address}
                         onChange={handleEditChange}
-                        placeholder='123 Main St, Apt 4B'
-                        className='w-full bg-[#ECE9E2]/50 border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
+                        placeholder="123 Serenity Blvd"
+                        className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
                       />
                     </div>
                     <div>
-                      <label htmlFor='profile-city' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor="edit-city" className="block text-xs font-medium text-neutral-700 mb-1">
                         City
                       </label>
                       <input
-                        id='profile-city'
-                        type='text'
-                        name='city'
+                        id="edit-city"
+                        type="text"
+                        name="city"
                         value={editData.city}
                         onChange={handleEditChange}
-                        placeholder='New York'
-                        className='w-full bg-[#ECE9E2]/50 border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
+                        className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
                       />
                     </div>
                     <div>
-                      <label htmlFor='profile-zip' className='block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'>
+                      <label htmlFor="edit-zip" className="block text-xs font-medium text-neutral-700 mb-1">
                         ZIP / Postal Code
                       </label>
                       <input
-                        id='profile-zip'
-                        type='text'
-                        name='zip'
+                        id="edit-zip"
+                        type="text"
+                        name="zip"
                         value={editData.zip}
                         onChange={handleEditChange}
-                        placeholder='10001'
-                        className='w-full bg-[#ECE9E2]/50 border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
+                        className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
                       />
                     </div>
                   </div>
 
-                  <div className='flex justify-end gap-3 pt-4 border-t border-gray-100'>
+                  <div className="flex justify-end gap-3 pt-4 border-t border-black/[0.06]">
                     <button
-                      type='button'
+                      type="button"
                       onClick={() => setIsEditing(false)}
-                      className='bg-gray-100 text-gray-700 font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-full hover:bg-gray-200 transition-colors cursor-pointer'
+                      className="bg-neutral-100 text-neutral-700 text-xs font-medium px-5 py-2.5 rounded-full hover:bg-neutral-200 transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
-                      type='submit'
-                      className='bg-[#212121] text-white font-bold text-xs uppercase tracking-wider px-8 py-3 rounded-full hover:bg-black transition-all cursor-pointer shadow-sm'
+                      type="submit"
+                      className="bg-[#000000] hover:bg-black text-white text-xs font-medium px-6 py-2.5 rounded-full transition-all cursor-pointer shadow-sm"
                     >
                       Save Changes
                     </button>
@@ -485,103 +468,102 @@ function Signup() {
               </div>
             )}
 
-            {/* DETAILS GRID */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <section aria-label="Account shortcuts" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Link to="/cart" className="group bg-white rounded-2xl p-4 border border-neutral-200 shadow-xs hover:shadow-sm hover:border-neutral-300 transition-all flex items-center gap-3">
+                <span className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-700">
+                  <FiShoppingBag />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-semibold text-neutral-900">Shopping Cart</span>
+                  <span className="block text-[11px] text-neutral-500">{cartItems.length} {cartItems.length === 1 ? 'product' : 'products'}</span>
+                </span>
+                <FiArrowRight className="text-neutral-400 group-hover:text-neutral-900 transition-colors" />
+              </Link>
 
-              {/* SHIPPING INFORMATION CARD */}
-              <div className='bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm flex flex-col justify-between'>
-                <div className='space-y-4'>
-                  <div className='flex items-center justify-center'>
-                    <h2 className='text-xs font-extrabold uppercase tracking-wider text-gray-900'>
-                       Shipping Address
-                    </h2>
-                   
-                  </div>
+              <Link to="/saved" className="group bg-white rounded-2xl p-4 border border-neutral-200 shadow-xs hover:shadow-sm hover:border-neutral-300 transition-all flex items-center gap-3">
+                <span className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-700">
+                  <FiHeart />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-semibold text-neutral-900">Saved Styles</span>
+                  <span className="block text-[11px] text-neutral-500">{wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'} saved</span>
+                </span>
+                <FiArrowRight className="text-neutral-400 group-hover:text-neutral-900 transition-colors" />
+              </Link>
 
-                  <div className='bg-[#ECE9E2]/60 rounded-2xl p-4 text-xs space-y-1.5 border border-gray-200/60'>
-                    <p className='font-bold text-gray-900 text-sm'>
-                      {user.fullName || 'Registered Member'}
-                    </p>
-                    <p className='text-gray-700'>
-                      {user.address ? (
-                        user.address
-                      ) : (
-                        <span className='text-gray-600 italic'>No street address specified</span>
-                      )}
-                    </p>
-                    <p className='text-gray-700'>
-                      {user.city || user.zip ? (
-                        `${user.city || ''} ${user.zip ? `— ${user.zip}` : ''}`
-                      ) : (
-                        <span className='text-gray-600 italic'>City & ZIP not set</span>
-                      )}
-                    </p>
-                    <p className='text-gray-600 pt-1'>
-                      {user.phone ? (
-                        `Phone: ${user.phone}`
-                      ) : (
-                        <span className='text-gray-600 italic'>Phone number not set</span>
-                      )}
-                    </p>
-                  </div>
+              <Link to="/all" className="group bg-white rounded-2xl p-4 border border-neutral-200 shadow-xs hover:shadow-sm hover:border-neutral-300 transition-all flex items-center gap-3">
+                <span className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-700">
+                  <FiArrowRight />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-semibold text-neutral-900">Browse Catalog</span>
+                  <span className="block text-[11px] text-neutral-500">Explore all footwear</span>
+                </span>
+                <FiArrowRight className="text-neutral-400 group-hover:text-neutral-900 transition-colors" />
+              </Link>
+            </section>
 
-                  <div className='rounded-2xl p-3 flex items-start gap-2.5 text-[11px] text-black'>
-                    <span>
-                      When you proceed to checkout, these shipping details will automatically prefill Step 1 for instant checkout.
-                    </span>
-                  </div>
+            <section aria-label="Profile and delivery information" className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-neutral-200 shadow-sm space-y-5">
+                <div>
+                  <h2 className="text-base font-semibold text-neutral-900">Personal Information</h2>
+                  <p className="mt-1 text-xs text-neutral-500">Your account contact details.</p>
                 </div>
-
+                <dl className="space-y-4">
+                  <div className="border-b border-neutral-100 pb-3">
+                    <dt className="text-[11px] text-neutral-500">Full name</dt>
+                    <dd className="mt-1 text-sm font-medium text-neutral-900">{user.fullName || 'Not provided'}</dd>
+                  </div>
+                  <div className="border-b border-neutral-100 pb-3">
+                    <dt className="text-[11px] text-neutral-500">Email address</dt>
+                    <dd className="mt-1 text-sm font-medium text-neutral-900 break-all">{user.email}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] text-neutral-500">Phone number</dt>
+                    <dd className="mt-1 text-sm font-medium text-neutral-900">{user.phone || 'Not provided'}</dd>
+                  </div>
+                </dl>
+                <button
+                  onClick={startEditing}
+                  className="text-xs font-semibold text-neutral-700 hover:text-black underline underline-offset-4 cursor-pointer"
+                >
+                  Update personal information
+                </button>
               </div>
 
-              {/* ACCOUNT PREFERENCES / TIED CART & SAVED OVERVIEW */}
-              <div className='bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm flex flex-col justify-between'>
-                <div className='space-y-4'>
-                  {/* <div className='flex items-center justify-center'>
-                    <h3 className='text-xs font-extrabold uppercase tracking-wider text-gray-900'>
-                      Account Overview
-                    </h3>
-                  </div> */}
-
-                  <div className='space-y-3 text-xs'>
-
-                    <Link to='/cart' className='flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 border border-gray-200/60 hover:scale-[1.01] transition-all duration-100 ease-linear' >
-                          <div className='flex items-center gap-2'>
-                          <FiShoppingBag className='text-gray-500' />
-                          <span className='font-semibold text-gray-700'> Cart</span>
-                        </div>
-                        <span className='font-bold text-gray-950 bg-white px-2.5 py-1 rounded-xl border border-gray-200'>
-                          {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
-                        </span>
-                      </Link>
-
-                  
-                      <Link to='/saved' className='flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 border border-gray-200/60 hover:scale-[1.01] transition-all duration-100 ease-linear' >
-                          <div className='flex items-center gap-2'>
-                          <FiHeart className='text-red-500' />
-                          <span className='font-semibold text-gray-700'> Wishlist</span>
-                        </div>
-                        <span className='font-bold text-gray-950 bg-white px-2.5 py-1 rounded-xl border border-gray-200'>
-                          {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'}
-                        </span>
-                      </Link>
-
-                      <Link to='/saved' className='flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 border border-gray-200/60 hover:scale-[1.01] transition-all duration-100 ease-linear' >
-                          <div className='flex items-center gap-2'>
-                           <FiShoppingBag className='text-gray-500' />
-
-                          <span className='font-semibold text-gray-700'> Browse Catalog</span>
-                        </div>
-
-                        <FiArrowRight/>
-                       
-                      </Link>
-                  </div>
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-neutral-200 shadow-sm space-y-5">
+                <div>
+                  <h2 className="text-base font-semibold text-neutral-900">Default Shipping Address</h2>
+                  <p className="mt-1 text-xs text-neutral-500">Used to prefill your checkout details.</p>
                 </div>
+                <address className="not-italic rounded-2xl bg-[#F5F5F7] border border-neutral-200 p-4 text-sm leading-6 text-neutral-700">
+                  <span className="block font-medium text-neutral-900">{user.fullName || 'Name not provided'}</span>
+                  <span className="block">{user.address || 'Street address not provided'}</span>
+                  <span className="block">{user.city || user.zip ? `${user.city || ''} ${user.zip || ''}` : 'City and postal code not provided'}</span>
+                  {user.phone && <span className="block">{user.phone}</span>}
+                </address>
+                <button
+                  onClick={startEditing}
+                  className="text-xs font-semibold text-neutral-700 hover:text-black underline underline-offset-4 cursor-pointer"
+                >
+                  Update shipping address
+                </button>
               </div>
-              
-              
-            </div>
+            </section>
+
+            <section aria-label="Account management" className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-neutral-200 pt-5">
+              <div>
+                <h2 className="text-sm font-semibold text-neutral-900">Account management</h2>
+                <p className="mt-1 text-xs text-neutral-500">Account deletion permanently removes your profile and saved information.</p>
+              </div>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="inline-flex items-center gap-2 self-start sm:self-auto text-xs font-medium text-red-700 hover:text-red-800 px-3 py-2 rounded-full hover:bg-red-50 transition-colors cursor-pointer"
+              >
+                <FiTrash2 />
+                Delete Account
+              </button>
+            </section>
 
           </div>
         </div>
@@ -589,410 +571,187 @@ function Signup() {
     )
   }
 
-  // UNREGISTERED / SIGN UP & SIGN IN FORM
+  // UNREGISTERED VIEW (Sign in / Sign up)
   return (
     <FadeIn>
-      <div className='min-h-[calc(100vh-4rem)] bg-[#ECE9E2] font-jakarta py-4 sm:py-6 lg:py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center'>
-        <div className={`w-full transition-all duration-300 ${authMode === 'signup' ? 'max-w-4xl' : 'max-w-lg'}`}>
-
-          {/* FLOATING TOAST NOTIFICATION */}
-          {notification && (
-            <div
-              role={notification.type === 'error' ? 'alert' : 'status'}
-              aria-live={notification.type === 'error' ? 'assertive' : 'polite'}
-              className={`fixed top-20 left-1/2 right-auto -translate-x-1/2 w-[calc(100%-2rem)] sm:left-auto sm:right-4 sm:translate-x-0 sm:w-auto z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 transition-all ${
-                notification.type === 'success'
-                  ? 'bg-[#212121] text-white border-neutral-700'
-                  : 'bg-red-950 text-red-100 border-red-800'
-              }`}
-            >
-              <div className='flex items-center gap-2.5 text-xs font-semibold'>
-                {notification.type === 'success' ? (
-                  <FiCheckCircle className='text-base shrink-0 text-white' />
-                ) : (
-                  <FiAlertCircle className='text-base shrink-0 text-red-400' />
-                )}
-                <span>{notification.message}</span>
-              </div>
-              <button
-                onClick={() => setNotification(null)}
-                className='text-white/60 hover:text-white p-1 cursor-pointer'
-              >
-                <FiX />
-              </button>
-            </div>
-          )}
+      <div className="min-h-[calc(100vh-4rem)] bg-[#FBFBFD] font-jakarta py-12 px-4 sm:px-6 flex items-center justify-center">
+        <NotificationToast
+          notification={notification}
+          onDismiss={() => setNotification(null)}
+        />
+        <div className={`w-full transition-all duration-300 ${authMode === 'signup' ? 'max-w-3xl' : 'max-w-md'}`}>
 
           {/* MAIN CARD */}
-          <div className='bg-white rounded-3xl p-6 sm:p-8 lg:p-9 border border-gray-200/80 shadow-lg space-y-5'>
+          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-neutral-300 shadow-sm space-y-6">
 
-            {/* CARD HEADER & TAB SELECTOR */}
-            <div className='flex flex-col gap-4 pb-5 border-b border-gray-100'>
-              <div className='flex items-center gap-3'>
-              
-                <div className=' flex w-full flex-col gap-1 justify-center items-center'>
-                  <h1 className='text-base lg:text-lg font-black text-gray-950 uppercase tracking-tight leading-tight'>
-                    {authMode === 'signup' ? 'Create an Account' : 'Welcome Back'}
-                  </h1>
-                  
-                </div>
-              </div>
+            {/* HEADER & TAB SWITCH */}
+            <div className="flex flex-col items-center gap-4 pb-4 border-b border-black/[0.06]">
+              <h1 className="text-xl sm:text-2xl font-semibold text-neutral-900 tracking-tight">
+                {authMode === 'signup' ? 'Create an Account' : 'Welcome Back'}
+              </h1>
 
-              {/* TABS */}
-              <div className='inline-flex p-1.5 bg-[#ECE9E2] rounded-full border border-gray-200 text-2xl font-bold uppercase tracking-wider self-center shrink-0'>
+              <div className="inline-flex p-1 bg-[#F5F5F7] border border-neutral-200 rounded-full text-xs font-medium">
                 <button
-                  type='button'
+                  type="button"
                   onClick={() => {
                     setAuthMode('signin')
                     setErrors({})
                   }}
-                  className={`px-4 sm:px-5 py-1.5 rounded-full transition-all cursor-pointer text-[11px] ${
+                  className={`px-5 py-1.5 rounded-full transition-all cursor-pointer ${
                     authMode === 'signin'
-                      ? 'bg-[#212121] text-white shadow-xs'
-                      : 'text-gray-600 hover:text-black'
+                      ? 'bg-white text-black shadow-2xs font-semibold'
+                      : 'text-neutral-500 hover:text-black'
                   }`}
                 >
                   Sign In
                 </button>
                 <button
-                  type='button'
+                  type="button"
                   onClick={() => {
                     setAuthMode('signup')
                     setErrors({})
                   }}
-                  className={`px-4 py-3 sm:px-5  rounded-full transition-all cursor-pointer text-[11px] ${
+                  className={`px-5 py-1.5 rounded-full transition-all cursor-pointer ${
                     authMode === 'signup'
-                      ? 'bg-[#212121] text-white shadow-xs'
-                      : 'text-gray-600 hover:text-black'
+                      ? 'bg-white text-black shadow-2xs font-semibold'
+                      : 'text-neutral-500 hover:text-black'
                   }`}
                 >
-                  Create Account
+                  Register
                 </button>
               </div>
             </div>
 
             {/* FORM */}
-            <form onSubmit={handleSubmit} className='space-y-3'>
-
+            <form onSubmit={handleSubmit} className="space-y-4">
               {authMode === 'signup' ? (
-                /* DESKTOP GRID */
-                <div className='grid grid-cols-1 lg:grid-cols-2 gap-3.5 lg:gap-4'>
-
-                  {/* LEFT COLUMN: ACCOUNT CREDENTIALS */}
-                  <div className='space-y-2.5 bg-[#ECE9E2]/30 p-3 sm:p-4 rounded-2xl border border-gray-200/60 flex flex-col justify-between '>
-                    <div className='space-y-4'>
-                      <div className='flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/60 pb-1.5'>
-                        <FiUser className='text-xs' />
-                        <span>Account Credentials</span>
-                      </div>
-
-                      {/* FULL NAME */}
-                      <div>
-                        <label
-                          htmlFor='fullName'
-                          className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'
-                        >
-                          Full Name *
-                        </label>
-                        <div className='relative'>
-                          <input
-                            id='fullName'
-                            type='text'
-                            name='fullName'
-                            value={formData.fullName}
-                            onChange={handleInputChange}
-                            placeholder='James Stephen'
-                            aria-describedby={errors.fullName ? 'signup-fullName-error' : undefined}
-                            aria-invalid={Boolean(errors.fullName)}
-                            className={`w-full bg-white border ${
-                              errors.fullName ? 'border-red-500' : 'border-gray-300'
-                            } rounded-2xl pl-9 pr-4 py-3 text-xs outline-none focus:border-black transition-colors`}
-                          />
-                          <FiUser className='absolute left-3 top-3.5 text-gray-600 text-xs' />
-                        </div>
-                        {errors.fullName && (
-                          <p id='signup-fullName-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1 px-1'>{errors.fullName}</p>
-                        )}
-                      </div>
-
-                      {/* EMAIL */}
-                      <div>
-                        <label
-                          htmlFor='email'
-                          className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'
-                        >
-                          Email Address *
-                        </label>
-                        <div className='relative'>
-                          <input
-                            id='email'
-                            type='email'
-                            name='email'
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            placeholder='james@example.com'
-                            aria-describedby={errors.email ? 'signup-email-error' : undefined}
-                            aria-invalid={Boolean(errors.email)}
-                            className={`w-full bg-white border ${
-                              errors.email ? 'border-red-500' : 'border-gray-300'
-                            } rounded-2xl pl-9 pr-4 py-3 text-xs outline-none focus:border-black transition-colors`}
-                          />
-                          <FiMail className='absolute left-3 top-3.5 text-gray-600 text-xs' />
-                        </div>
-                        {errors.email && (
-                          <p id='signup-email-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1 px-1'>{errors.email}</p>
-                        )}
-                      </div>
-
-                      {/* PASSWORD */}
-                      <div>
-                        <label
-                          htmlFor='password'
-                          className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'
-                        >
-                          Password *
-                        </label>
-                        <div className='relative'>
-                          <input
-                            id='password'
-                            type={showPassword ? 'text' : 'password'}
-                            name='password'
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            placeholder='••••••••'
-                            aria-describedby={errors.password ? 'signup-password-error' : undefined}
-                            aria-invalid={Boolean(errors.password)}
-                            className={`w-full bg-white border ${
-                              errors.password ? 'border-red-500' : 'border-gray-300'
-                            } rounded-2xl pl-9 pr-4 py-3 text-xs outline-none focus:border-black transition-colors`}
-                          />
-                          <FiLock className='absolute left-3 top-3.5 text-gray-600 text-xs' />
-                          <button
-                            type='button'
-                            onClick={() => setShowPassword(!showPassword)}
-                            className='absolute right-3 top-3.5 text-gray-600 hover:text-gray-700 cursor-pointer'
-                            aria-label={showPassword ? 'Hide password' : 'Show password'}
-                          >
-                            {showPassword ? <FiEyeOff className='text-xs' /> : <FiEye className='text-xs' />}
-                          </button>
-                        </div>
-                        {errors.password && (
-                          <p id='signup-password-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1 px-1'>{errors.password}</p>
-                        )}
-                      </div>
-                    </div>
-
-                  
-                  </div>
-
-                  {/* RIGHT COLUMN: SHIPPING & AUTOFILL DETAILS */}
-                  <div className='space-y-4 bg-[#ECE9E2]/30 p-3 sm:p-4 rounded-2xl border border-gray-200/60'>
-                    <div className='flex items-center justify-between border-b border-gray-200/60 pb-1.5'>
-                      <div className='flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-gray-900'>
-                        <FiMapPin className='text-xs' />
-                        <span>Shipping & Checkout </span>
-                      </div>
-                     
-                    </div>
-
-                    {/* STREET ADDRESS */}
-                    <div>
-                      <label
-                        htmlFor='address'
-                        className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'
-                      >
-                        Street Address
-                      </label>
-                      <input
-                        id='address'
-                        type='text'
-                        name='address'
-                        value={formData.address}
-                        onChange={handleInputChange}
-                        placeholder='123 Main St, Apt 4B'
-                        className='w-full bg-white border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
-                      />
-                    </div>
-
-                    {/* CITY & ZIP */}
-                    <div className='grid grid-cols-2 gap-2'>
-                      <div>
-                        <label
-                          htmlFor='city'
-                          className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'
-                        >
-                          City
-                        </label>
-                        <input
-                          id='city'
-                          type='text'
-                          name='city'
-                          value={formData.city}
-                          onChange={handleInputChange}
-                          placeholder='Lagos'
-                          className='w-full bg-white border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor='zip'
-                          className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'
-                        >
-                          ZIP Code
-                        </label>
-                        <input
-                          id='zip'
-                          type='text'
-                          name='zip'
-                          value={formData.zip}
-                          onChange={handleInputChange}
-                          placeholder='10001'
-                          className='w-full bg-white border border-gray-300 rounded-2xl px-4 py-3 text-xs outline-none focus:border-black transition-colors'
-                        />
-                      </div>
-                    </div>
-
-                    {/* PHONE */}
-                    <div>
-                      <label
-                        htmlFor='phone'
-                        className='block px-2 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'
-                      >
-                        Phone Number
-                      </label>
-                      <div className='relative'>
-                        <input
-                          id='phone'
-                          type='tel'
-                          name='phone'
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          placeholder='+234 (555) 000-0000'
-                          className='w-full bg-white border border-gray-300 rounded-2xl pl-9 pr-4 py-3 text-xs outline-none focus:border-black transition-colors'
-                        />
-                        <FiPhone className='absolute left-3 top-3.5 text-gray-600 text-xs' />
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              ) : (
-                /* SIGN IN FORM LAYOUT */
-                <div className='space-y-4 py-2 w-full'>
-                  {/* EMAIL */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label
-                      htmlFor='email'
-                      className='block px-1 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'
-                    >
+                    <label htmlFor="fullName" className="block text-xs font-medium text-neutral-700 mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      id="fullName"
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      placeholder="Jane Doe"
+                      className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
+                    />
+                    {errors.fullName && <p className="text-[10px] text-red-500 mt-1">{errors.fullName}</p>}
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-xs font-medium text-neutral-700 mb-1">
                       Email Address *
                     </label>
-                    <div className='relative'>
-                      <input
-                        id='email'
-                        type='email'
-                        name='email'
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder='james@example.com'
-                        aria-describedby={errors.email ? 'signin-email-error' : undefined}
-                        aria-invalid={Boolean(errors.email)}
-                        className={`w-full bg-[#ECE9E2]/50 border ${
-                          errors.email ? 'border-red-500' : 'border-gray-300'
-                        } rounded-2xl pl-11 pr-4 py-3 text-xs outline-none focus:border-black transition-colors`}
-                      />
-                      <FiMail className='absolute left-4 top-3.5 text-gray-600 text-sm' />
-                    </div>
-                    {errors.email && (
-                      <p id='signin-email-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1 px-1'>{errors.email}</p>
-                    )}
+                    <input
+                      id="email"
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="jane@example.com"
+                      className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
+                    />
+                    {errors.email && <p className="text-[10px] text-red-500 mt-1">{errors.email}</p>}
                   </div>
 
-                  {/* PASSWORD */}
-                  <div>
-                    <label
-                      htmlFor='password'
-                      className='block px-1 text-xs font-bold text-gray-700 uppercase tracking-wide mb-1'
-                    >
+                  <div className="sm:col-span-2">
+                    <label htmlFor="password" className="block text-xs font-medium text-neutral-700 mb-1">
                       Password *
                     </label>
-                    <div className='relative'>
+                    <div className="relative">
                       <input
-                        id='password'
+                        id="password"
                         type={showPassword ? 'text' : 'password'}
-                        name='password'
+                        name="password"
                         value={formData.password}
                         onChange={handleInputChange}
-                        placeholder='••••••••'
-                        aria-describedby={errors.password ? 'signin-password-error' : undefined}
-                        aria-invalid={Boolean(errors.password)}
-                        className={`w-full bg-[#ECE9E2]/50 border ${
-                          errors.password ? 'border-red-500' : 'border-gray-300'
-                        } rounded-2xl pl-11 pr-11 py-3 text-xs outline-none focus:border-black transition-colors`}
+                        placeholder="••••••••"
+                        className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl pl-4 pr-10 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
                       />
-                      <FiLock className='absolute left-4 top-3.5 text-gray-600 text-sm' />
                       <button
-                        type='button'
+                        type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className='absolute right-4 top-3.5 text-gray-600 hover:text-gray-700 cursor-pointer'
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        className="absolute right-3.5 top-3.5 text-neutral-400 hover:text-black cursor-pointer"
                       >
-                        {showPassword ? <FiEyeOff className='text-sm' /> : <FiEye className='text-sm' />}
+                        {showPassword ? <FiEyeOff className="text-xs" /> : <FiEye className="text-xs" />}
                       </button>
                     </div>
-                    {errors.password && (
-                      <p id='signin-password-error' role='alert' className='text-[10px] text-red-700 font-semibold mt-1 px-1'>{errors.password}</p>
-                    )}
+                    {errors.password && <p className="text-[10px] text-red-500 mt-1">{errors.password}</p>}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="email" className="block text-xs font-medium text-neutral-700 mb-1">
+                      Email Address *
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="jane@example.com"
+                      className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
+                    />
+                    {errors.email && <p className="text-[10px] text-red-500 mt-1">{errors.email}</p>}
+                  </div>
+
+                  <div>
+                    <label htmlFor="password" className="block text-xs font-medium text-neutral-700 mb-1">
+                      Password *
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        placeholder="••••••••"
+                        className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl pl-4 pr-10 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        className="absolute right-3.5 top-3.5 text-neutral-400 hover:text-black cursor-pointer"
+                      >
+                        {showPassword ? <FiEyeOff className="text-xs" /> : <FiEye className="text-xs" />}
+                      </button>
+                    </div>
+                    {errors.password && <p className="text-[10px] text-red-500 mt-1">{errors.password}</p>}
                   </div>
                 </div>
               )}
 
-              {/* ACTION BAR & SUBMIT BUTTON */}
-              <div className='pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100'>
-                <p className='text-[11px] text-gray-500 text-center sm:text-left order-2 sm:order-1'>
-                  {authMode === 'signup' ? (
-                    <>
-                      Already registered?{' '}
-                      <button
-                        type='button'
-                        onClick={() => {
-                          setAuthMode('signin')
-                          setErrors({})
-                        }}
-                        className='underline text-gray-900 font-bold hover:text-black cursor-pointer'
-                      >
-                        Sign in here
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      Need an account?{' '}
-                      <button
-                        type='button'
-                        onClick={() => {
-                          setAuthMode('signup')
-                          setErrors({})
-                        }}
-                        className='underline text-gray-900 font-bold hover:text-black cursor-pointer'
-                      >
-                        Create one now
-                      </button>
-                    </>
-                  )}
-                </p>
+              <div className="pt-4 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 border-t border-black/[0.06]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode(authMode === 'signup' ? 'signin' : 'signup')
+                    setErrors({})
+                  }}
+                  className="text-center sm:text-left text-xs text-neutral-500 hover:text-black font-light underline"
+                >
+                  {authMode === 'signup' ? 'Already registered? Sign in' : 'Need an account? Register'}
+                </button>
 
                 <button
-                  type='submit'
-                  className='w-full sm:w-auto px-7 py-4 bg-[#212121] text-white hover:bg-black font-extrabold text-xs uppercase tracking-wider rounded-full transition-all cursor-pointer shadow-md hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 order-1 sm:order-2 shrink-0'
+                  type="submit"
+                  className="w-full sm:w-auto whitespace-nowrap bg-[#000000] hover:bg-black text-white text-xs font-medium tracking-wide px-7 py-3 rounded-full transition-all shadow-sm"
                 >
-                  <span>{authMode === 'signup' ? 'Create Account' : 'Sign In'}</span>
-                  <FiArrowRight />
+                  {authMode === 'signup' ? 'Create Account' : 'Sign In'}
                 </button>
               </div>
             </form>
 
           </div>
-
 
         </div>
       </div>

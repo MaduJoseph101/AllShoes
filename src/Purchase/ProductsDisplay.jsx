@@ -6,82 +6,87 @@ const SECTIONS = [
     id: 1,
     bgImage: '/DisplayImages/jordanD.jpg',
     alt: "Women's Footwear Collection",
-    title: 'New design',
+    title: 'New Silhouette',
     tag: "Limited Edition",
-    className: 'col-span-1 md:col-span-2 min-h-[350px] sm:min-h-[380px] md:min-h-[450px]',
-    titleSize: 'text-2xl sm:text-5xl'
+    className: 'col-span-1 md:col-span-2 min-h-[360px] sm:min-h-[420px]',
+    titleSize: 'text-2xl sm:text-4xl'
   },
   {
     id: 2,
     bgImage: '/DisplayImages/menshoeD.jpg',
     alt: "Men's Footwear Collection",
-    title: 'Summer collection',
-    tag: "Summer Edition",
-    className: 'col-span-1 md:col-span-1 min-h-[350px] sm:min-h-[400px] md:min-h-[450px]',
+    title: 'Summer Edition',
+    tag: "Seasonal Archive",
+    className: 'col-span-1 md:col-span-1 min-h-[360px] sm:min-h-[420px]',
+    titleSize: 'text-2xl sm:text-3xl'
   },
   {
     id: 3,
     bgImage: '/DisplayImages/womenshoeD.jpg',
     alt: 'Athletic Shoes Feature',
-    title: 'New arrivals',
-    tag: 'Deluxe edition',
-    className: 'col-span-1 md:col-span-1 min-h-[350px] sm:min-h-[400px] md:min-h-[450px]',
+    title: 'New Arrivals',
+    tag: 'Deluxe Edition',
+    className: 'col-span-1 md:col-span-1 min-h-[360px] sm:min-h-[420px]',
+    titleSize: 'text-2xl sm:text-3xl'
   },
 ]
 
-function Display() {
+function ProductsDisplay() {
   return (
     <section 
       aria-label="Featured Collections" 
-      className='max-w-7xl mx-auto py-6 sm:px-6 mb-0 sm:mb-7 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 w-full font-jakarta'
+      className="max-w-6xl mx-auto my-16 px-4 font-jakarta"
     >
-      {SECTIONS.map((box) => (
-        <div 
-          key={box.id} 
-          className={`group rounded-3xl relative overflow-hidden border border-black/10 shadow-sm hover:shadow-2xl hover:border-black/0 transition-all duration-500 ease-out flex flex-col justify-between p-6 sm:p-8 ${box.className}`}
-        >
-          <img 
-            src={box.bgImage} 
-            alt={box.alt} 
-            decoding='async'
-            className='absolute inset-0 h-full w-full object-center object-cover brightness-95 group-hover:brightness-100 group-hover:scale-105 transition-transform delay-100 duration-700 ease-out' 
-          />         
+      <div className="mb-6">
+        <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-neutral-400">Related</span>
+        <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-neutral-900 mt-0.5">Explore More Collections</h2>
+      </div>
 
-          <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/0 z-0 pointer-events-none transition-opacity duration-300' />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+        {SECTIONS.map((box) => (
+          <div 
+            key={box.id} 
+            className={`group rounded-3xl relative overflow-hidden bg-neutral-900 shadow-sm hover:shadow-xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col justify-between p-8 ${box.className}`}
+          >
+            <img 
+              src={box.bgImage} 
+              alt={box.alt} 
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-center object-cover brightness-[0.88] group-hover:brightness-95 group-hover:scale-[1.04] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" 
+            />         
 
-          {/* TEXT ALIGNMENT*/}
-          <div className='flex flex-col justify-between h-full w-full z-10 relative'>
-            
-            <div className='flex items-center justify-start'>
-              <span className='bg-white/90 text-black text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-xs backdrop-blur-xs'>
-                {box.tag}
-              </span>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10 z-0 pointer-events-none" />
+
+            <div className="flex flex-col justify-between h-full w-full z-10 relative">
+              <div>
+                <span className="inline-block text-[10px] font-semibold tracking-[0.2em] uppercase text-white/80 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/15">
+                  {box.tag}
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className={`font-semibold text-white tracking-[-0.02em] ${box.titleSize}`}>
+                  {box.title} 
+                </h3>
+
+                <div className="flex items-center gap-3 pt-1">
+                  <MenButton 
+                    MenButton="Shop Men" 
+                    to="/men"
+                  />
+                  <WomenButton 
+                    WomenButton="Shop Women" 
+                    to="/women"
+                  />
+                </div>
+              </div>
+
             </div>
-
-            <div className='my-auto py-6 px-2 text-center'>
-              <h2 className={`font-jakarta uppercase text-white font-extrabold tracking-tight text-center drop-shadow-md group-hover:scale-[1.02] text-2xl sm:text-3xl transition-transform duration-300 ${box.titleSize}`}>
-                    {box.title} 
-              </h2>
-            </div>
-
-            <div className='w-full flex justify-between items-center gap-3 sm:gap-4 pt-2'>
-              <MenButton 
-                className='!bg-white !text-black !border-white hover:!bg-black hover:!text-white hover:!border-black shadow-md h-8 w-20 sm:h-12 sm:w-35 font-jakarta text-[12px] sm:text-sm font-bold py-2.5 px-4 rounded-full transition-all duration-300  flex justify-center' 
-                MenButton='Shop Men' 
-                to='/men'
-              />
-              <WomenButton 
-                className='!bg-white !text-black !border-white hover:!bg-black hover:!text-white hover:!border-black shadow-md h-8 w-20 sm:h-12 sm:w-35 font-jakarta text-[12px] sm:text-sm font-bold py-2.5 px-4 rounded-full transition-all duration-300 flex justify-center' 
-                WomenButton='Shop Women' 
-                to='/women'
-              />
-            </div>
-
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </section>
   )
 }
 
-export default Display
+export default ProductsDisplay

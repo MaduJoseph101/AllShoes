@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { IoIosArrowBack } from "react-icons/io";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io"
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -12,8 +11,10 @@ function getVisibleCount() {
   if (typeof window === 'undefined') return 4
   const w = window.innerWidth
   if (w < 640) return 1
-  if (w < 768 ) return 2
-  if (w < 1024) return  3
+  if (w < 768) return 2
+  if (w < 1024) return 3
+  if (w >= 2560) return 6
+  if (w >= 1920) return 5
   return 4
 }
 
@@ -29,14 +30,13 @@ function BestSellers() {
   const prevVisibleCount = useRef(visibleCount)
   const hasPositioned = useRef(false)
 
-  // MOBILE DRAG FUNCTIONALITY
+  // Mobile drag state
   const [dragPx, setDragPx] = useState(0)
   const dragPxRef = useRef(0)
   const dragState = useRef({ active: false, startX: 0, moved: false })
   const viewportRef = useRef(null)
   const isMobile = visibleCount === 1
 
-  // Keyboard accessible arrow buttons
   const prevDisabled = isJumping.current || data.length === 0
   const nextDisabled = isJumping.current || data.length === 0
 
@@ -107,84 +107,32 @@ function BestSellers() {
     }
   }, [visibleCount, loading, data.length])
 
-    // LOADER
+  // SKELETON
   if (loading) return (
-    <section className='min-h-[50vh] w-full pt-5 flex flex-col justify-center px-4 sm:px-6 font-jakarta'>
-      <div className='flex justify-between px-4 items-center'>
-        <h2 id='best-sellers' className='uppercase tracking-wider text-[0.9rem] sm:text-[1.1rem] font-jakarta border-b-2 border-black w-fit font-bold text-gray-950'>
-          Trending Now
-        </h2>
-        <div className='flex gap-4 items-center'>
-          <div className='w-8 h-8 rounded-full bg-gray-300 animate-pulse' />
-          <div className='w-8 h-8 rounded-full bg-gray-300 animate-pulse' />
+    <section aria-label="Loading trending products" className="w-full max-w-7xl mx-auto my-16 px-6 font-jakarta">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-neutral-400">Curated</span>
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-neutral-900 mt-1">Trending Now</h2>
+        </div>
+        <div className="flex gap-2">
+          <div className="w-9 h-9 rounded-full bg-neutral-200 animate-pulse" />
+          <div className="w-9 h-9 rounded-full bg-neutral-200 animate-pulse" />
         </div>
       </div>
-
-      <p role='status' aria-live='polite' className='sr-only'>Loading products…</p>
-
-      {/* SKELETON CARDS */}
-      <div aria-hidden='true' className='overflow-hidden pt-6 pb-6 mt-4 w-full'>
-        <div className='flex items-stretch'>
-          {Array.from({ length: visibleCount }).map((_, i) => (
-            <div key={i} className='px-6 sm:px-3' style={{ width: `${100 / visibleCount}%` }}>
-              <div className='bg-[#F7F5F0] border border-[#E6E1D7] rounded-3xl overflow-hidden flex flex-col h-full animate-pulse shadow-xs'>
-                
-                {/* IMAGE PLACEHOLDER FOR SKELETON CARDS */}
-                <div className='relative flex items-center justify-center p-6 bg-[#EFECE6]/70 min-h-[200px]'>
-                  <div className='absolute top-4 left-4 w-12 h-4 bg-gray-300/80 rounded-full' />
-                  <div className='w-32 h-28 bg-gray-300/60 rounded-2xl' />
-                </div>
-
-                {/* DETAILS PLACEHOLDER FOR SKELETON CARDS */}
-                <div className='flex flex-col justify-between p-5 flex-1 gap-4 bg-[#F7F5F0]'>
-                  <div className='flex flex-col gap-2'>
-                    <div className='h-3 bg-gray-300/70 rounded w-1/3' />
-                    <div className='h-4 bg-gray-300/80 rounded w-3/4' />
-                  </div>
-
-                  <div className='flex items-center justify-between pt-3 border-t border-[#E6E1D7]/70'>
-                    <div className='h-5 bg-gray-300/80 rounded w-16' />
-                    <div className='h-4 bg-gray-300/70 rounded w-16' />
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="best-seller-skeleton-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {Array.from({ length: visibleCount }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-3 animate-pulse">
+            <div className="bg-[#F5F5F7] rounded-3xl aspect-square w-full" />
+            <div className="h-4 bg-neutral-200 rounded w-2/3" />
+            <div className="h-3 bg-neutral-200 rounded w-1/3" />
+          </div>
+        ))}
       </div>
     </section>
   )
 
-  // ERROR CARD
-  if (error) return (
-    <section className='min-h-[35vh] w-full py-8 px-5 sm:px-6 flex flex-col justify-center font-jakarta'>
-      <div className='flex justify-between items-center mb-6 px-1'>
-        <h2 id='best-sellers' className='uppercase tracking-wider text-[0.9rem] sm:text-[1.1rem] font-jakarta border-b-2 border-black w-fit font-bold text-gray-950'>Trending Now</h2>
-      </div>
-
-      <div className='flex items-center justify-center py-6'>
-        <div className='w-full max-w-lg bg-[#F7F5F0] border border-[#E6E1D7] rounded-3xl p-8 sm:p-10 text-center flex flex-col items-center gap-3 shadow-sm'>
-          <span className='font-jakarta text-[11px] uppercase tracking-widest text-gray-600 font-semibold'>
-            Connection Error
-          </span>
-          <h3 className='font-jakarta font-extrabold text-lg sm:text-xl text-gray-950 tracking-tight'>
-            Unable to load products
-          </h3>
-          <p className='font-jakarta text-xs sm:text-sm text-gray-600 max-w-sm leading-relaxed'>
-            We couldn't retrieve the latest items. Please check your network connection and try again.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className='mt-3 font-jakarta text-xs sm:text-sm font-bold bg-[#111111] text-white px-7 py-3 rounded-full hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer shadow-sm'
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    </section>
-  )
-
+  if (error) return null
   if (data.length === 0) return null
 
   const safeVisibleCount = Math.min(visibleCount, data.length)
@@ -193,9 +141,7 @@ function BestSellers() {
   const extendedData = [...clonesBefore, ...data, ...clonesAfter]
 
   const slideOffset = (currentIndex * 100) / extendedData.length
-
-  const realSlideNumber =
-    (((currentIndex - safeVisibleCount) % data.length) + data.length) % data.length + 1
+  const realSlideNumber = (((currentIndex - safeVisibleCount) % data.length) + data.length) % data.length + 1
 
   const handleNext = () => {
     if (isJumping.current) return
@@ -275,50 +221,57 @@ function BestSellers() {
   }
 
   return (
-    <section aria-label='Trending products' className=' min-h-[50vh] w-full justify-center  flex flex-col'>
+    <section aria-label="Trending products" className="w-full max-w-7xl mx-auto my-16 px-4 sm:px-6 font-jakarta">
+      {/* SECTION HEADER */}
+      <div className="flex justify-between items-end mb-8 px-2">
+        <div>
+          <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-neutral-400">
+            Selected
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] text-[#000000] mt-0.5">
+            Trending Now
+          </h2>
+        </div>
 
-      <div className='flex justify-between px-4 items-center'>
-        <h2 id='best-sellers' className='uppercase tracking-wider text-[0.9rem] sm:text-[1.1rem] font-jakarta border-b-2 w-fit'>Trending Now</h2>
-
-        <span className='flex gap-4 font-jakarta items-center justify-center text-black' role='group' aria-label='Carousel navigation'>
+        <div className="flex gap-2.5 items-center" role="group" aria-label="Carousel navigation">
           <button
-            type='button'
+            type="button"
             onClick={handlePrev}
             disabled={prevDisabled}
-            aria-label='Previous product'
-            className='cursor-pointer border-black border-[1px] p-2 rounded-[50%] transition-all duration-300 ease-in-out font-bold hover:bg-black hover:text-white hover:scale-[1.1] active:bg-black active:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F5F0] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent'
+            aria-label="Previous product"
+            className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center text-neutral-700 hover:text-black hover:border-black/30 hover:bg-neutral-100 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
           >
-            <IoIosArrowBack/>
+            <IoIosArrowBack className="text-lg" />
           </button>
           <button
-            type='button'
+            type="button"
             onClick={handleNext}
             disabled={nextDisabled}
-            aria-label='Next product'
-            className='cursor-pointer border-black border-[1px] p-2 rounded-[50%] transition-all duration-300 ease-in-out font-bold hover:bg-black hover:text-white hover:scale-[1.1] active:bg-black active:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F5F0] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent'
+            aria-label="Next product"
+            className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center text-neutral-700 hover:text-black hover:border-black/30 hover:bg-neutral-100 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
           >
-            <IoIosArrowForward/>
+            <IoIosArrowForward className="text-lg" />
           </button>
-        </span>
+        </div>
       </div>
 
-      <p className='sr-only' aria-live="polite">
+      <p className="sr-only" aria-live="polite">
         Showing product {realSlideNumber} of {data.length}
       </p>
 
-      {/* CARDS */}
-      <div ref={viewportRef} className='overflow-hidden pt-6 pb-6 mt-4 w-full min-h-[30vh]'>
+      {/* CAROUSEL VIEWPORT */}
+      <div ref={viewportRef} className="overflow-hidden w-full pb-4">
         <div
-          role='group'
-          aria-roledescription='carousel'
-          aria-label='Trending products carousel'
+          role="group"
+          aria-roledescription="carousel"
+          aria-label="Trending products carousel"
           onTransitionEnd={handleTransitionEnd}
           onPointerDown={handleDragStart}
           onPointerMove={handleDragMove}
           onPointerUp={handleDragEnd}
           onPointerCancel={handleDragCancel}
           onClickCapture={handleCaptureClick}
-          className={`flex items-stretch select-none ${isMobile ? 'touch-pan-y cursor-grab active:cursor-grabbing' : ''} ${withTransition ? 'transition-transform duration-500 ease-in-out' : ''}`}
+          className={`flex items-stretch select-none ${isMobile ? 'touch-pan-y cursor-grab active:cursor-grabbing' : ''} ${withTransition ? 'transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]' : ''}`}
           style={{
             transform: `translateX(calc(-${slideOffset}% + ${dragPx}px))`,
             width: `${(extendedData.length * 100) / visibleCount}%`,
@@ -327,51 +280,41 @@ function BestSellers() {
           {extendedData.map((shoe, i) => (
             <div
               key={`${shoe.id}-${i}`}
-              className='px-6 sm:px-3'
+              className="px-2.5 sm:px-3"
               style={{ width: `${100 / extendedData.length}%` }}
             >
-              <Link to={`/all`} className='block h-full group'>
-                <div className='relative bg-[#F7F5F0] border border-[#E6E1D7] rounded-3xl overflow-hidden flex flex-col h-full transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-black/30'>
+              <Link
+                to={`/productdetails/${shoe.id}`}
+                className="block h-full group bg-white rounded-3xl p-3 border border-neutral-300 hover:border-neutral-900 shadow-xs hover:shadow-lg transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
+              >
+                {/* MUSEUM PEDESTAL */}
+                <div className="relative bg-[#F5F5F7] rounded-2xl p-6 aspect-square flex items-center justify-center overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-[#ECECEE]">
+                  <img
+                    src={shoe.thumbnail}
+                    alt={shoe.title}
+                    className="max-h-[85%] max-w-[85%] object-contain group-hover:scale-[1.05] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                  />
+                </div>
 
-                   <span className='absolute top-3 left-3 text-black text-[9px] sm:text-[10px] uppercase tracking-widest font-extrabold px-2.5 py-0.5 rounded-full z-10'>
-                      New
+                {/* DETAILS BELOW PEDESTAL */}
+                <div className="pt-3 pb-1 px-1.5 flex flex-col gap-0.5">
+                  <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-neutral-400">
+                    {shoe.brand || 'Classic'}
+                  </span>
+                  <div className="flex justify-between items-baseline gap-2">
+                    <h3 className="text-xs sm:text-sm font-medium text-neutral-900 truncate group-hover:text-black">
+                      {shoe.title}
+                    </h3>
+                    <span className="text-xs sm:text-sm text-neutral-800 font-semibold shrink-0">
+                      {currencyFormatter.format(shoe.price)}
                     </span>
-
-                  <div className='relative flex items-center justify-center p-6 bg-[#EFECE6]/70 overflow-hidden min-h-[200px]'>
-                    <img
-                      src={shoe.thumbnail}
-                      alt={shoe.title}
-                      className='h-44 sm:h-40 lg:h-48 max-w-full object-contain group-hover:scale-105 transition-transform duration-500 ease-out'
-                    />
                   </div>
-
-                  <div className='flex flex-col justify-between p-5 flex-1 gap-3 bg-[#F7F5F0]'>
-                    <div className='flex flex-col gap-1'>
-                      <span className='font-jakarta text-[11px] uppercase tracking-widest text-gray-500 font-semibold'>
-                        {shoe.brand || shoe.tags?.[0] || 'Classic'}
-                      </span>
-                      <h3 className='font-jakarta font-bold text-sm uppercase tracking-wide text-gray-950 line-clamp-1 group-hover:text-black transition-colors'>
-                        {shoe.title}
-                      </h3>
-                    </div>
-
-                    <div className='flex items-center justify-between pt-2 border-t border-[#E6E1D7]/70'>
-                      <span className='font-jakarta text-base font-extrabold text-gray-950'>
-                        {currencyFormatter.format(shoe.price)}
-                      </span>
-                      {/* <span className='text-xs font-jakarta font-bold uppercase tracking-wider text-black group-hover:underline flex items-center gap-1'>
-                        Explore &rarr;
-                      </span> */}
-                    </div>
-                  </div>
-
                 </div>
               </Link>
             </div>
           ))}
         </div>
       </div>
-
     </section>
   )
 }
