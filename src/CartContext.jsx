@@ -7,6 +7,135 @@ const CURRENT_USER_KEY = 'allshoes_active_user'
 const LEGACY_CART_KEY = 'allshoes_cart'
 const LEGACY_WISHLIST_KEY = 'allshoes_wishlist'
 const LEGACY_USER_KEY = 'allshoes_user'
+const LOGIN_ATTEMPTS_KEY_PREFIX = 'allshoes_login_attempts_'
+const MAX_LOGIN_ATTEMPTS = 5
+const LOGIN_LOCKOUT_DURATION_MS = 60 * 1000
+const PASSWORD_HASH_ITERATIONS = 210000
+const PASSWORD_SALT_BYTES = 16
+const PASSWORD_HASH_BYTES = 32
+
+function bytesToHex(bytes) {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+function hexToBytes(hex) {
+  if (typeof hex !== 'string' || hex.length % 2 !== 0 || !/^[\da-f]+$/i.test(hex)) {
+    throw new Error('Stored password credentials are invalid.')
+  }
+
+  return Uint8Array.from(hex.match(/.{2}/g), (byte) => Number.parseInt(byte, 16))
+}
+
+async function derivePasswordHash(password, salt, iterations = PASSWORD_HASH_ITERATIONS) {
+  if (!globalThis.crypto?.subtle || !globalThis.crypto?.getRandomValues) {
+    throw new Error('Password hashing is unavailable. Use a modern browser over HTTPS or localhost.')
+  }
+
+  const keyMaterial = await globalThis.crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  )
+  const hashBits = await globalThis.crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
+    keyMaterial,
+    PASSWORD_HASH_BYTES * 8
+  )
+
+  return bytesToHex(new Uint8Array(hashBits))
+}
+
+async function createPasswordCredentials(password) {
+  const salt = globalThis.crypto.getRandomValues(new Uint8Array(PASSWORD_SALT_BYTES))
+  const passwordSalt = bytesToHex(salt)
+  const passwordHash = await derivePasswordHash(password, salt)
+
+  return { passwordHash, passwordSalt, passwordHashIterations: PASSWORD_HASH_ITERATIONS }
+}
+
+function hasPasswordHash(user) {
+  return typeof user.passwordHash === 'string'
+    && typeof user.passwordSalt === 'string'
+    && Number.isInteger(user.passwordHashIterations)
+    && user.passwordHashIterations >= 100000
+    && user.passwordHashIterations <= 600000
+}
+
+function stripPasswordCredentials(user) {
+  const publicUser = { ...user }
+  delete publicUser.password
+  delete publicUser.passwordHash
+  delete publicUser.passwordSalt
+  delete publicUser.passwordHashIterations
+  return publicUser
+}
+
+async function migrateLegacyPasswords() {
+  const users = loadUsersDb()
+  let didMigrate = false
+  const migratedUsers = []
+
+  for (const user of users) {
+    if (typeof user.password !== 'string') {
+      migratedUsers.push(user)
+      continue
+    }
+
+    const credentials = await createPasswordCredentials(user.password)
+    const migratedUser = { ...user, ...credentials }
+    delete migratedUser.password
+    migratedUsers.push(migratedUser)
+    didMigrate = true
+  }
+
+  if (didMigrate && !saveUsersDb(migratedUsers)) {
+    throw new Error('Could not save secured account credentials to this browser.')
+  }
+}
+
+function getLoginAttemptsKey(email) {
+  return `${LOGIN_ATTEMPTS_KEY_PREFIX}${encodeURIComponent(normalizeEmail(email))}`
+}
+
+function loadLoginAttempts(email) {
+  try {
+    const raw = localStorage.getItem(getLoginAttemptsKey(email))
+    if (!raw) return { failedAttempts: 0, lockedUntil: 0 }
+
+    const parsed = JSON.parse(raw)
+    if (!Number.isInteger(parsed.failedAttempts) || !Number.isFinite(parsed.lockedUntil)) {
+      console.error('Stored sign-in attempt data is invalid.')
+      return null
+    }
+
+    return parsed
+  } catch (error) {
+    console.error('Failed to load sign-in attempt data from localStorage:', error)
+    return null
+  }
+}
+
+function saveLoginAttempts(email, attempts) {
+  try {
+    localStorage.setItem(getLoginAttemptsKey(email), JSON.stringify(attempts))
+    return true
+  } catch (error) {
+    console.error('Failed to save sign-in attempt data to localStorage:', error)
+    return false
+  }
+}
+
+function clearLoginAttempts(email) {
+  try {
+    localStorage.removeItem(getLoginAttemptsKey(email))
+    return true
+  } catch (error) {
+    console.error('Failed to clear sign-in attempt data from localStorage:', error)
+    return false
+  }
+}
 
 // USER DATABASE (LOCAL STORAGE SIMULATION)
 function loadUsersDb() {
@@ -28,8 +157,10 @@ function saveUsersDb(users) {
     } else {
       localStorage.removeItem(USERS_DB_KEY)
     }
+    return true
   } catch (error) {
     console.error('Failed to save users database to localStorage:', error)
+    return false
   }
 }
 
@@ -40,13 +171,19 @@ function loadActiveUser() {
       // LEGACY KEY PRESENCE FOR MIGRATION
       const legacyRaw = localStorage.getItem(LEGACY_USER_KEY)
       if (legacyRaw) {
+        const legacyUser = JSON.parse(legacyRaw)
         localStorage.removeItem(LEGACY_USER_KEY)
-        localStorage.setItem(CURRENT_USER_KEY, legacyRaw)
-        return JSON.parse(legacyRaw)
+        saveActiveUser(legacyUser)
+        return stripPasswordCredentials(legacyUser)
       }
       return null
     }
-    return JSON.parse(raw)
+    const activeUser = JSON.parse(raw)
+    const publicUser = stripPasswordCredentials(activeUser)
+    if (Object.keys(publicUser).length !== Object.keys(activeUser).length) {
+      saveActiveUser(publicUser)
+    }
+    return publicUser
   } catch (error) {
     console.error('Failed to load active user session:', error)
     localStorage.removeItem(CURRENT_USER_KEY)
@@ -57,12 +194,14 @@ function loadActiveUser() {
 function saveActiveUser(user) {
   try {
     if (user) {
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user))
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(stripPasswordCredentials(user)))
     } else {
       localStorage.removeItem(CURRENT_USER_KEY)
     }
+    return true
   } catch (error) {
     console.error('Failed to save active user session:', error)
+    return false
   }
 }
 
@@ -149,11 +288,34 @@ export function CartProvider({ children }) {
   const [user, setUser] = useState(loadActiveUser)
   const [cartItems, setCartItems] = useState(() => loadUserCart(user))
   const [wishlistItems, setWishlistItems] = useState(() => loadUserWishlist(user))
+  const [passwordStorageStatus, setPasswordStorageStatus] = useState('checking')
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
+  const passwordMigrationRef = useRef(null)
 
   // LOADED USER EMAIL TO PREVENT DUPLICATES
   const loadedEmailRef = useRef(user ? normalizeEmail(user.email) : null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    if (!passwordMigrationRef.current) {
+      passwordMigrationRef.current = migrateLegacyPasswords()
+    }
+
+    passwordMigrationRef.current
+      .then(() => {
+        if (isMounted) setPasswordStorageStatus('ready')
+      })
+      .catch((error) => {
+        console.error('Failed to migrate existing account passwords:', error)
+        if (isMounted) setPasswordStorageStatus('error')
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   // AUTH PROMPT MODAL STATE
   const [authPrompt, setAuthPrompt] = useState({
@@ -241,7 +403,11 @@ export function CartProvider({ children }) {
   }, [])
 
   // AUTHENTICATION & USER DATABASE HANDLERS
-  const registerUser = useCallback((userData) => {
+  const registerUser = useCallback(async (userData) => {
+    if (passwordStorageStatus !== 'ready') {
+      return { success: false, message: 'Account security setup is not ready. Please reload and try again.' }
+    }
+
     const users = loadUsersDb()
     const emailKey = normalizeEmail(userData.email)
     const existing = users.find((u) => normalizeEmail(u.email) === emailKey)
@@ -250,8 +416,10 @@ export function CartProvider({ children }) {
       return { success: false, message: 'An account with this email address already exists. Please sign in.' }
     }
 
+    const credentials = await createPasswordCredentials(userData.password)
     const newUser = {
-      ...userData,
+      ...stripPasswordCredentials(userData),
+      ...credentials,
       email: emailKey,
       registeredAt: userData.registeredAt || new Date().toLocaleDateString('en-US', {
         year: 'numeric',
@@ -261,48 +429,132 @@ export function CartProvider({ children }) {
     }
 
     const updatedUsers = [...users, newUser]
-    saveUsersDb(updatedUsers)
-    saveActiveUser(newUser)
+    if (!saveUsersDb(updatedUsers)) {
+      return { success: false, message: 'Unable to save the account in this browser. Please try again.' }
+    }
 
+    const activeUser = stripPasswordCredentials(newUser)
+    saveActiveUser(activeUser)
     loadedEmailRef.current = emailKey
-    setUser(newUser)
+    setUser(activeUser)
 
     // Load any existing cart/wishlist for this email (or start fresh)
-    const existingCart = loadUserCart(newUser)
-    const existingWishlist = loadUserWishlist(newUser)
+    const existingCart = loadUserCart(activeUser)
+    const existingWishlist = loadUserWishlist(activeUser)
     setCartItems(existingCart)
     setWishlistItems(existingWishlist)
 
-    return { success: true, user: newUser }
-  }, [])
+    return { success: true, user: activeUser }
+  }, [passwordStorageStatus])
 
-  const loginUser = useCallback(({ email, password }) => {
+  const loginUser = useCallback(async ({ email, password }) => {
+    if (passwordStorageStatus !== 'ready') {
+      return { success: false, message: 'Account security setup is not ready. Please reload and try again.' }
+    }
+
     const users = loadUsersDb()
     const emailKey = normalizeEmail(email)
     const found = users.find((u) => normalizeEmail(u.email) === emailKey)
     const invalidCredentialsMessage = 'Unable to sign in with those details. Please check and try again.'
+    const attempts = loadLoginAttempts(emailKey)
 
-    if (!found) {
+    if (!attempts) {
+      return { success: false, message: 'Unable to check sign-in protection. Please try again.' }
+    }
+
+    const now = Date.now()
+    if (attempts.lockedUntil > now) {
+      const minutesRemaining = Math.ceil((attempts.lockedUntil - now) / 60000)
+      return {
+        success: false,
+        message: `Too many unsuccessful attempts. Try again in ${minutesRemaining} ${minutesRemaining === 1 ? 'minute' : 'minutes'}.`,
+        lockedUntil: attempts.lockedUntil,
+      }
+    }
+
+    let passwordMatches = false
+    if (found && hasPasswordHash(found)) {
+      passwordMatches = await derivePasswordHash(
+        password,
+        hexToBytes(found.passwordSalt),
+        found.passwordHashIterations
+      ) === found.passwordHash
+    }
+
+    if (!passwordMatches) {
+      const failedAttempts = attempts.lockedUntil ? 1 : attempts.failedAttempts + 1
+      const lockedUntil = failedAttempts >= MAX_LOGIN_ATTEMPTS
+        ? now + LOGIN_LOCKOUT_DURATION_MS
+        : 0
+
+      if (!saveLoginAttempts(emailKey, { failedAttempts, lockedUntil })) {
+        return { success: false, message: 'Unable to record this sign-in attempt. Please try again.' }
+      }
+
+      if (lockedUntil) {
+        return {
+          success: false,
+          message: 'Too many unsuccessful attempts. Sign-in is temporarily locked for 1 minute.',
+          lockedUntil,
+        }
+      }
+
       return { success: false, message: invalidCredentialsMessage }
     }
 
-    if (found.password && found.password !== password) {
-      return { success: false, message: invalidCredentialsMessage }
+    if (!clearLoginAttempts(emailKey)) {
+      return { success: false, message: 'Unable to complete sign-in. Please try again.' }
     }
 
-    saveActiveUser(found)
+    const activeUser = stripPasswordCredentials(found)
+    saveActiveUser(activeUser)
 
     loadedEmailRef.current = emailKey
-    setUser(found)
+    setUser(activeUser)
 
     // Load user's tied cart and wishlist
-    const userCart = loadUserCart(found)
-    const userWishlist = loadUserWishlist(found)
+    const userCart = loadUserCart(activeUser)
+    const userWishlist = loadUserWishlist(activeUser)
     setCartItems(userCart)
     setWishlistItems(userWishlist)
 
-    return { success: true, user: found }
-  }, [])
+    return { success: true, user: activeUser }
+  }, [passwordStorageStatus])
+
+  const resetPassword = useCallback(async ({ email, password }) => {
+    if (passwordStorageStatus !== 'ready') {
+      return { success: false, message: 'Account security setup is not ready. Please reload and try again.' }
+    }
+
+    const emailKey = normalizeEmail(email)
+    const users = loadUsersDb()
+    const userIndex = users.findIndex((u) => normalizeEmail(u.email) === emailKey)
+
+    if (userIndex === -1) {
+      return { success: false, message: 'No account was found with that email address.' }
+    }
+
+    const credentials = await createPasswordCredentials(password)
+    const updatedUsers = users.map((storedUser, index) => {
+      if (index !== userIndex) return storedUser
+      const updatedUser = { ...storedUser, ...credentials }
+      delete updatedUser.password
+      return updatedUser
+    })
+
+    if (!saveUsersDb(updatedUsers)) {
+      return { success: false, message: 'Unable to save the new password. Please try again.' }
+    }
+
+    if (!clearLoginAttempts(emailKey)) {
+      return {
+        success: true,
+        message: 'Password updated, but sign-in attempt data could not be cleared. Please reload and try again.',
+      }
+    }
+
+    return { success: true }
+  }, [passwordStorageStatus])
 
   const updateUser = useCallback((updatedFields) => {
     setUser((prev) => {
@@ -584,9 +836,11 @@ export function CartProvider({ children }) {
         undoWishlistRemove,
         lastRemovedWishlistItem,
         user,
+        passwordStorageStatus,
         saveUser: registerUser,
         registerUser,
         loginUser,
+        resetPassword,
         updateUser,
         deleteUser,
         logoutUser,

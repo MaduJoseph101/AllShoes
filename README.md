@@ -26,6 +26,8 @@ A modern, fully responsive e-commerce shoe store built with **React 19**, **Tail
 | **Multi-Tab Sync** | Cart, wishlist, and auth state stay in sync across browser tabs via the `storage` event |
 | **Accessibility** | ARIA labels, keyboard-navigable carousels & size selectors, screen-reader live regions |
 
+> **Authentication demo:** Sign-up, sign-in, and account data are handled entirely in the browser using `localStorage`; there is no authentication backend, server-side security, or real user database. Browser storage can be inspected or changed, so use demo credentials only.
+
 ---
 
 ## Tech Stack

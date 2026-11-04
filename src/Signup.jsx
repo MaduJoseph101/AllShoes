@@ -48,8 +48,10 @@ function NotificationToast({ notification, onDismiss }) {
 function Signup() {
   const {
     user,
+    passwordStorageStatus,
     registerUser,
     loginUser,
+    resetPassword,
     updateUser,
     deleteUser,
     logoutUser,
@@ -67,6 +69,12 @@ function Signup() {
   const [showPassword, setShowPassword] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isPasswordReset, setIsPasswordReset] = useState(false)
+  const [resetFormData, setResetFormData] = useState({ email: '', password: '', confirmPassword: '' })
+  const [resetErrors, setResetErrors] = useState({})
+  const [signInLockoutUntil, setSignInLockoutUntil] = useState(null)
+  const [lockoutRemainingMs, setLockoutRemainingMs] = useState(0)
+  const [isAuthSubmitting, setIsAuthSubmitting] = useState(false)
   const deleteDialogRef = useRef(null)
   useFocusTrap(deleteDialogRef, showDeleteConfirm, () => setShowDeleteConfirm(false))
   const [notification, setNotification] = useState(null)
@@ -106,11 +114,43 @@ function Signup() {
     return () => clearTimeout(timeoutId)
   }, [notification])
 
+  useEffect(() => {
+    if (!signInLockoutUntil) return undefined
+
+    const updateRemainingTime = () => {
+      const remaining = Math.max(0, signInLockoutUntil - Date.now())
+      setLockoutRemainingMs(remaining)
+      if (remaining === 0) setSignInLockoutUntil(null)
+    }
+
+    const intervalId = setInterval(updateRemainingTime, 1000)
+    return () => clearInterval(intervalId)
+  }, [signInLockoutUntil])
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    if (name === 'email') {
+      setSignInLockoutUntil(null)
+      setLockoutRemainingMs(0)
+    }
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  const handleResetInputChange = (e) => {
+    const { name, value } = e.target
+    setResetFormData((prev) => ({ ...prev, [name]: value }))
+    const errorsToClear = name === 'password' ? ['password', 'confirmPassword'] : [name]
+    if (errorsToClear.some((field) => resetErrors[field])) {
+      setResetErrors((prev) => {
+        const next = { ...prev }
+        errorsToClear.forEach((field) => {
+          next[field] = ''
+        })
+        return next
+      })
     }
   }
 
@@ -175,66 +215,128 @@ function Signup() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (authMode === 'signup') {
-      if (!validateSignup()) return
+    if (authMode === 'signup' ? !validateSignup() : !validateSignin()) return
 
-      const newUser = {
-        fullName: formData.fullName.trim(),
-        email: formData.email.trim(),
-        password: formData.password,
-        address: formData.address.trim(),
-        city: formData.city.trim(),
-        zip: formData.zip.trim(),
-        phone: formData.phone.trim(),
-        registeredAt: new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        }),
+    setIsAuthSubmitting(true)
+    try {
+      if (authMode === 'signup') {
+        const newUser = {
+          fullName: formData.fullName.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+          address: formData.address.trim(),
+          city: formData.city.trim(),
+          zip: formData.zip.trim(),
+          phone: formData.phone.trim(),
+          registeredAt: new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          }),
+        }
+
+        const res = await registerUser(newUser)
+        if (!res.success) {
+          showToast('error', res.message)
+          return
+        }
+
+        showToast('success', `Welcome to AllShoes, ${newUser.fullName}!`)
+        setFormData({
+          fullName: '',
+          email: '',
+          password: '',
+          address: '',
+          city: '',
+          zip: '',
+          phone: '',
+        })
+      } else {
+        const res = await loginUser({
+          email: formData.email.trim(),
+          password: formData.password,
+        })
+
+        if (!res.success) {
+          if (res.lockedUntil) {
+            setSignInLockoutUntil(res.lockedUntil)
+            setLockoutRemainingMs(Math.max(0, res.lockedUntil - Date.now()))
+          }
+          showToast('error', res.message)
+          return
+        }
+
+        setSignInLockoutUntil(null)
+        setLockoutRemainingMs(0)
+        showToast('success', `Welcome back, ${res.user.fullName || res.user.email}!`)
+        setFormData({
+          fullName: '',
+          email: '',
+          password: '',
+          address: '',
+          city: '',
+          zip: '',
+          phone: '',
+        })
       }
+    } catch (error) {
+      console.error('Authentication failed:', error)
+      showToast('error', error.message || 'Unable to complete authentication in this browser.')
+    } finally {
+      setIsAuthSubmitting(false)
+    }
+  }
 
-      const res = registerUser(newUser)
-      if (!res.success) {
-        showToast('error', res.message)
+  const handlePasswordReset = async (e) => {
+    e.preventDefault()
+
+    const newErrors = {}
+    if (!resetFormData.email.trim()) {
+      newErrors.email = 'Email address is required'
+    } else if (!/\S+@\S+\.\S+/.test(resetFormData.email)) {
+      newErrors.email = 'Please enter a valid email address'
+    }
+    if (!resetFormData.password) {
+      newErrors.password = 'New password is required'
+    } else if (resetFormData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters'
+    }
+    if (!resetFormData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your new password'
+    } else if (resetFormData.password !== resetFormData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
+    }
+
+    setResetErrors(newErrors)
+    if (Object.keys(newErrors).length > 0) return
+
+    setIsAuthSubmitting(true)
+    try {
+      const result = await resetPassword({
+        email: resetFormData.email.trim(),
+        password: resetFormData.password,
+      })
+
+      if (!result.success) {
+        showToast('error', result.message)
         return
       }
 
-      showToast('success', `Welcome to AllShoes, ${newUser.fullName}!`)
-      setFormData({
-        fullName: '',
-        email: '',
-        password: '',
-        address: '',
-        city: '',
-        zip: '',
-        phone: '',
-      })
-    } else {
-      if (!validateSignin()) return
-
-      const res = loginUser({
-        email: formData.email.trim(),
-        password: formData.password,
-      })
-
-      if (!res.success) {
-        showToast('error', res.message)
-        return
-      }
-
-      showToast('success', `Welcome back, ${res.user.fullName || res.user.email}!`)
-      setFormData({
-        fullName: '',
-        email: '',
-        password: '',
-        address: '',
-        city: '',
-        zip: '',
-        phone: '',
-      })
+      setFormData((prev) => ({ ...prev, email: resetFormData.email.trim(), password: '' }))
+      setResetFormData({ email: '', password: '', confirmPassword: '' })
+      setIsPasswordReset(false)
+      setSignInLockoutUntil(null)
+      setLockoutRemainingMs(0)
+      setAuthMode('signin')
+      showToast('success', result.message || 'Password updated in this browser. You can now sign in.')
+    } catch (error) {
+      console.error('Password reset failed:', error)
+      showToast('error', error.message || 'Unable to update the password in this browser.')
+    } finally {
+      setIsAuthSubmitting(false)
     }
   }
 
@@ -587,42 +689,141 @@ function Signup() {
             {/* HEADER & TAB SWITCH */}
             <div className="flex flex-col items-center gap-4 pb-4 border-b border-black/[0.06]">
               <h1 className="text-xl sm:text-2xl font-semibold text-neutral-900 tracking-tight">
-                {authMode === 'signup' ? 'Create an Account' : 'Welcome Back'}
+                {isPasswordReset
+                  ? 'Reset Your Password'
+                  : authMode === 'signup'
+                    ? 'Create an Account'
+                    : 'Welcome Back'}
               </h1>
 
-              <div className="inline-flex p-1 bg-[#F5F5F7] border border-neutral-200 rounded-full text-xs font-medium">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMode('signin')
-                    setErrors({})
-                  }}
-                  className={`px-5 py-1.5 rounded-full transition-all cursor-pointer ${
-                    authMode === 'signin'
-                      ? 'bg-white text-black shadow-2xs font-semibold'
-                      : 'text-neutral-500 hover:text-black'
-                  }`}
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMode('signup')
-                    setErrors({})
-                  }}
-                  className={`px-5 py-1.5 rounded-full transition-all cursor-pointer ${
-                    authMode === 'signup'
-                      ? 'bg-white text-black shadow-2xs font-semibold'
-                      : 'text-neutral-500 hover:text-black'
-                  }`}
-                >
-                  Register
-                </button>
-              </div>
+              {isPasswordReset ? (
+                <p className="max-w-sm text-center text-xs text-neutral-500 leading-relaxed">
+                  Update the password for your local demo account.
+                </p>
+              ) : (
+                <div className="inline-flex p-1 bg-[#F5F5F7] border border-neutral-200 rounded-full text-xs font-medium">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPasswordReset(false)
+                      setAuthMode('signin')
+                      setErrors({})
+                    }}
+                    className={`px-5 py-1.5 rounded-full transition-all cursor-pointer ${
+                      authMode === 'signin'
+                        ? 'bg-white text-black shadow-2xs font-semibold'
+                        : 'text-neutral-500 hover:text-black'
+                    }`}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPasswordReset(false)
+                      setAuthMode('signup')
+                      setErrors({})
+                    }}
+                    className={`px-5 py-1.5 rounded-full transition-all cursor-pointer ${
+                      authMode === 'signup'
+                        ? 'bg-white text-black shadow-2xs font-semibold'
+                        : 'text-neutral-500 hover:text-black'
+                    }`}
+                  >
+                    Register
+                  </button>
+                </div>
+              )}
             </div>
 
+            {passwordStorageStatus === 'checking' && (
+              <p role="status" className="text-center text-xs text-neutral-500">
+                Securing existing account passwords in this browser…
+              </p>
+            )}
+            {passwordStorageStatus === 'error' && (
+              <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs leading-relaxed text-red-700">
+                Account security setup could not be completed. Sign-in and registration are unavailable; reload the page and try again.
+              </p>
+            )}
+
             {/* FORM */}
+            {isPasswordReset ? (
+              <form onSubmit={handlePasswordReset} className="space-y-4">
+                <div role="note" className="rounded-xl border border-neutral-200 bg-[#F5F5F7] p-3 text-xs leading-relaxed text-neutral-600">
+                  Demo only: no email will be sent and account ownership is not verified. This changes the password saved in this browser.
+                </div>
+
+                <div>
+                  <label htmlFor="reset-email" className="block text-xs font-medium text-neutral-700 mb-1">
+                    Email Address *
+                  </label>
+                  <input
+                    id="reset-email"
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    value={resetFormData.email}
+                    onChange={handleResetInputChange}
+                    placeholder="jane@example.com"
+                    className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
+                  />
+                  {resetErrors.email && <p className="text-[10px] text-red-500 mt-1">{resetErrors.email}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="reset-password" className="block text-xs font-medium text-neutral-700 mb-1">
+                    New Password *
+                  </label>
+                  <input
+                    id="reset-password"
+                    type="password"
+                    name="password"
+                    autoComplete="new-password"
+                    value={resetFormData.password}
+                    onChange={handleResetInputChange}
+                    className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
+                  />
+                  {resetErrors.password && <p className="text-[10px] text-red-500 mt-1">{resetErrors.password}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="reset-confirm-password" className="block text-xs font-medium text-neutral-700 mb-1">
+                    Confirm New Password *
+                  </label>
+                  <input
+                    id="reset-confirm-password"
+                    type="password"
+                    name="confirmPassword"
+                    autoComplete="new-password"
+                    value={resetFormData.confirmPassword}
+                    onChange={handleResetInputChange}
+                    className="w-full bg-[#F5F5F7] border border-neutral-300 focus:border-black rounded-xl px-4 py-3 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-black/10 transition-all"
+                  />
+                  {resetErrors.confirmPassword && <p className="text-[10px] text-red-500 mt-1">{resetErrors.confirmPassword}</p>}
+                </div>
+
+                <div className="pt-4 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 border-t border-black/[0.06]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPasswordReset(false)
+                      setResetErrors({})
+                    }}
+                    className="text-center sm:text-left text-xs text-neutral-500 hover:text-black font-light underline"
+                  >
+                    Back to sign in
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={passwordStorageStatus !== 'ready' || isAuthSubmitting}
+                    className="w-full sm:w-auto whitespace-nowrap bg-[#000000] hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium tracking-wide px-7 py-3 rounded-full transition-all shadow-sm"
+                  >
+                    {isAuthSubmitting ? 'Updating…' : 'Update Password'}
+                  </button>
+                </div>
+              </form>
+            ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {authMode === 'signup' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -726,7 +927,26 @@ function Signup() {
                       </button>
                     </div>
                     {errors.password && <p className="text-[10px] text-red-500 mt-1">{errors.password}</p>}
+                    <div className="flex justify-end mt-2">
+                      <button
+                        type="button"
+                        disabled={passwordStorageStatus !== 'ready' || isAuthSubmitting}
+                        onClick={() => {
+                          setResetFormData((prev) => ({ ...prev, email: formData.email }))
+                          setResetErrors({})
+                          setIsPasswordReset(true)
+                        }}
+                        className="text-xs text-neutral-500 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed underline underline-offset-2"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
                   </div>
+                  {lockoutRemainingMs > 0 && (
+                    <p role="alert" className="text-xs text-red-600" aria-live="assertive">
+                      Sign-in is temporarily locked. Try again in {Math.ceil(lockoutRemainingMs / 60000)} {Math.ceil(lockoutRemainingMs / 60000) === 1 ? 'minute' : 'minutes'}.
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -744,12 +964,14 @@ function Signup() {
 
                 <button
                   type="submit"
-                  className="w-full sm:w-auto whitespace-nowrap bg-[#000000] hover:bg-black text-white text-xs font-medium tracking-wide px-7 py-3 rounded-full transition-all shadow-sm"
+                  disabled={passwordStorageStatus !== 'ready' || isAuthSubmitting || (authMode === 'signin' && lockoutRemainingMs > 0)}
+                  className="w-full sm:w-auto whitespace-nowrap bg-[#000000] hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium tracking-wide px-7 py-3 rounded-full transition-all shadow-sm"
                 >
-                  {authMode === 'signup' ? 'Create Account' : 'Sign In'}
+                  {isAuthSubmitting ? 'Please wait…' : authMode === 'signup' ? 'Create Account' : 'Sign In'}
                 </button>
               </div>
             </form>
+            )}
 
           </div>
 
