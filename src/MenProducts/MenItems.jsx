@@ -2,29 +2,30 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import FAQ from '../Props/FAQ'
 import FadeIn from '../FadeIn'
+import { fetchProductsByCategory } from '../api/products'
 
 function MenItems() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
-    let ignore = false
+    const controller = new AbortController()
     const fetchMenShoes = async () => {
       try {
-        const response = await fetch('https://dummyjson.com/products/category/mens-shoes')
-        if (!response.ok) throw new Error('Failed to fetch products')
-        const data = await response.json()
-        if (!ignore) setProducts(data.products || [])
+        const fetchedProducts = await fetchProductsByCategory('mens-shoes', controller.signal)
+        setProducts(fetchedProducts)
+        setError(null)
       } catch (err) {
-        if (!ignore) setError(err.message)
+        if (err.name !== 'AbortError') setError(err.message)
       } finally {
-        if (!ignore) setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
     fetchMenShoes()
-    return () => { ignore = true }
-  }, [])
+    return () => controller.abort()
+  }, [retryCount])
 
   return (
     <FadeIn>
@@ -71,7 +72,11 @@ function MenItems() {
                 <div className="space-y-3">
                   <h3 className="text-base font-semibold text-neutral-900">Unable to load collection</h3>
                   <button
-                    onClick={() => window.location.reload()}
+                    onClick={() => {
+                      setError(null)
+                      setLoading(true)
+                      setRetryCount((count) => count + 1)
+                    }}
                     className="text-xs font-medium underline text-neutral-700 hover:text-black"
                   >
                     Try reloading

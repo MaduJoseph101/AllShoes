@@ -291,6 +291,7 @@ export function CartProvider({ children }) {
   const [passwordStorageStatus, setPasswordStorageStatus] = useState('checking')
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
+  const [checkoutDiscount, setCheckoutDiscount] = useState({ promoCode: null, discountRate: 0 })
   const passwordMigrationRef = useRef(null)
 
   // LOADED USER EMAIL TO PREVENT DUPLICATES
@@ -631,11 +632,20 @@ export function CartProvider({ children }) {
   // DRAWER AND CHECKOUT CONTROLS
   const openDrawer = useCallback(() => setIsDrawerOpen(true), [])
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), [])
-  const openCheckout = useCallback(() => {
+  const openCheckout = useCallback((discount = {}) => {
     setIsDrawerOpen(false)
+    setCheckoutDiscount({
+      promoCode: discount.promoCode || null,
+      discountRate: Number.isFinite(discount.discountRate)
+        ? Math.min(1, Math.max(0, discount.discountRate))
+        : 0,
+    })
     setIsCheckoutOpen(true)
   }, [])
-  const closeCheckout = useCallback(() => setIsCheckoutOpen(false), [])
+  const closeCheckout = useCallback(() => {
+    setIsCheckoutOpen(false)
+    setCheckoutDiscount({ promoCode: null, discountRate: 0 })
+  }, [])
 
   // ITEM STOCK LIMIT RESTRICTION & AUTH GUARD
   const addToCart = useCallback((product, size, color, openDrawerAfter = true) => {
@@ -827,6 +837,7 @@ export function CartProvider({ children }) {
         openDrawer,
         closeDrawer,
         isCheckoutOpen,
+        checkoutDiscount,
         openCheckout,
         closeCheckout,
         toggleWishlist,

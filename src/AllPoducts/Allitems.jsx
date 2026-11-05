@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { RiSearchLine } from 'react-icons/ri'
 import FAQ from '../Props/FAQ'
 import FadeIn from '../FadeIn'
+import { fetchAllShoeProducts, searchShoeProducts } from '../api/products'
 
 function SkeletonGrid() {
   return (
@@ -26,12 +27,15 @@ function Allitems() {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [searchLoading, setSearchLoading] = useState(false)
+  const [searchError, setSearchError] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
   const [activeSuggestion, setActiveSuggestion] = useState(-1)
+  const [retryCount, setRetryCount] = useState(0)
 
   const inputRef = useRef(null)
   const dropdownRef = useRef(null)
   const debounceRef = useRef(null)
+  const searchControllerRef = useRef(null)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -46,27 +50,21 @@ function Allitems() {
 
   // FETCH ALL PRODUCTS
   useEffect(() => {
-    let ignore = false
+    const controller = new AbortController()
     const fetchAll = async () => {
       try {
-        const [mensRes, womensRes] = await Promise.all([
-          fetch('https://dummyjson.com/products/category/mens-shoes'),
-          fetch('https://dummyjson.com/products/category/womens-shoes'),
-        ])
-        if (!mensRes.ok || !womensRes.ok) throw new Error('Failed to fetch products')
-        const mensData = await mensRes.json()
-        const womensData = await womensRes.json()
-        const merged = [...(mensData.products || []), ...(womensData.products || [])]
-        if (!ignore) setProducts(merged)
+        const allProducts = await fetchAllShoeProducts(controller.signal)
+        setProducts(allProducts)
+        setError(null)
       } catch (err) {
-        if (!ignore) setError(err.message)
+        if (err.name !== 'AbortError') setError(err.message)
       } finally {
-        if (!ignore) setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
     fetchAll()
-    return () => { ignore = true }
-  }, [])
+    return () => controller.abort()
+  }, [retryCount])
 
   // DEBOUNCED SEARCH
   const handleQueryChange = (e) => {
@@ -75,9 +73,12 @@ function Allitems() {
     setActiveSuggestion(-1)
 
     clearTimeout(debounceRef.current)
+    searchControllerRef.current?.abort()
+    searchControllerRef.current = null
     const trimmed = val.trim()
     if (!trimmed) {
       setSuggestions([])
+      setSearchError(false)
       setShowDropdown(false)
       setSearchLoading(false)
       return
@@ -87,17 +88,29 @@ function Allitems() {
     setShowDropdown(true)
 
     debounceRef.current = setTimeout(async () => {
+      const controller = new AbortController()
+      searchControllerRef.current = controller
       try {
-        const res = await fetch(`https://dummyjson.com/products/search?q=${encodeURIComponent(trimmed)}&limit=8`)
-        const data = await res.json()
-        setSuggestions(data.products || [])
-      } catch {
-        setSuggestions([])
+        const results = await searchShoeProducts(trimmed, controller.signal)
+        if (!controller.signal.aborted) {
+          setSuggestions(results)
+          setSearchError(false)
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          setSuggestions([])
+          setSearchError(true)
+        }
       } finally {
-        setSearchLoading(false)
+        if (!controller.signal.aborted) setSearchLoading(false)
       }
     }, 300)
   }
+
+  useEffect(() => () => {
+    clearTimeout(debounceRef.current)
+    searchControllerRef.current?.abort()
+  }, [])
 
   // CLOSE DROPDOWN ON CLICK OUTSIDE
   useEffect(() => {
@@ -220,6 +233,10 @@ function Allitems() {
                       </div>
                     ))}
                   </div>
+                ) : searchError ? (
+                  <div role="status" className="px-5 py-6 text-center text-xs text-neutral-500">
+                    Search is unavailable right now. Try again in a moment.
+                  </div>
                 ) : suggestions.length > 0 ? (
                   <ul className="divide-y divide-black/[0.04] max-h-[360px] overflow-y-auto">
                     {suggestions.map((item, idx) => (
@@ -274,7 +291,11 @@ function Allitems() {
                 <div className="space-y-3">
                   <h3 className="text-base font-semibold text-neutral-900">Unable to load collection</h3>
                   <button
-                    onClick={() => window.location.reload()}
+                    onClick={() => {
+                      setError(null)
+                      setLoading(true)
+                      setRetryCount((count) => count + 1)
+                    }}
                     className="text-xs font-medium underline text-neutral-700 hover:text-black"
                   >
                     Try reloading

@@ -3,6 +3,8 @@ import { useCart } from '../CartContext'
 import { FiTrash2, FiMinus, FiPlus, FiShoppingBag, FiArrowLeft, FiTag } from 'react-icons/fi'
 import { FaTruck, FaUndoAlt } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
+import { fetchProductsByCategory } from '../api/products'
+import { calculateOrderTotals } from './pricing'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -21,32 +23,30 @@ function Cart() {
   const [promoError, setPromoError] = useState('')
   const [promoSuccess, setPromoSuccess] = useState('')
   const [recommendations, setRecommendations] = useState([])
+  const [recommendationsError, setRecommendationsError] = useState(false)
+  const [recommendationsRetry, setRecommendationsRetry] = useState(0)
 
   useEffect(() => {
     const controller = new AbortController()
 
     const fetchRecommendations = async () => {
       try {
-        const res = await fetch('https://dummyjson.com/products/category/mens-shoes', { signal: controller.signal })
-        const data = await res.json()
-        if (data.products) {
-          setRecommendations(data.products.slice(0, 4))
-        }
+        const products = await fetchProductsByCategory('mens-shoes', controller.signal)
+        setRecommendations(products.slice(0, 4))
+        setRecommendationsError(false)
       } catch (error) {
-        if (error.name !== 'AbortError') {
-        }
+        if (error.name !== 'AbortError') setRecommendationsError(true)
       }
     }
 
     fetchRecommendations()
     return () => controller.abort()
-  }, [])
+  }, [recommendationsRetry])
 
-  const shippingThreshold = 100
-  const shippingCost = subtotal >= shippingThreshold ? 0 : 9.99
-  const discount = appliedPromo ? subtotal * PROMO_CODES[appliedPromo] : 0
-  const tax = (subtotal - discount) * 0.08
-  const total = subtotal - discount + tax + shippingCost
+  const { discount, shippingCost, tax, total } = calculateOrderTotals(
+    subtotal,
+    appliedPromo ? PROMO_CODES[appliedPromo] : 0,
+  )
 
   const handlePromo = () => {
     const code = promoInput.trim().toUpperCase()
@@ -303,7 +303,10 @@ function Cart() {
               </div>
 
               <button
-                onClick={openCheckout}
+                onClick={() => openCheckout({
+                  promoCode: appliedPromo,
+                  discountRate: appliedPromo ? PROMO_CODES[appliedPromo] : 0,
+                })}
                 className="w-full py-4 bg-[#000000] hover:bg-black text-white font-semibold text-xs tracking-wider uppercase rounded-full transition-all shadow-sm hover:shadow cursor-pointer"
               >
                 Proceed to Checkout
@@ -314,6 +317,18 @@ function Cart() {
         </div>
 
         {/* RECOMMENDATIONS */}
+        {recommendationsError && (
+          <div className="pt-8 text-center" role="status">
+            <p className="text-xs text-neutral-500">Recommendations are unavailable right now.</p>
+            <button
+              type="button"
+              onClick={() => setRecommendationsRetry((retry) => retry + 1)}
+              className="mt-2 text-xs font-medium text-neutral-700 underline hover:text-black"
+            >
+              Try again
+            </button>
+          </div>
+        )}
         {recommendations.length > 0 && (
           <div className="pt-12 border-t border-black/[0.06] space-y-6">
             <h2 className="text-lg font-semibold text-neutral-900 tracking-tight">

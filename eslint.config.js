@@ -18,4 +18,11 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    files: ['src/CartContext.jsx'],
+    rules: {
+      // This module intentionally exports the provider and its context hooks together.
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

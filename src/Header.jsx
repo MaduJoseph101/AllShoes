@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { RiSearchLine } from "react-icons/ri"
 import { AiOutlineShopping } from "react-icons/ai"
@@ -6,6 +6,7 @@ import { RxHamburgerMenu, RxCross2 } from "react-icons/rx"
 import { CgProfile } from "react-icons/cg"
 import { FiHeart } from "react-icons/fi"
 import { useCart } from './CartContext'
+import useFocusTrap from './useFocusTrap'
 
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
@@ -18,20 +19,12 @@ const COUNT_BADGE_CLASS = 'absolute -top-1 -right-1 w-[18px] h-[18px] p-0 rounde
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef(null)
   const { itemCount, openDrawer, wishlistItems, user } = useCart()
   const savedCount = wishlistItems ? wishlistItems.length : 0
   const location = useLocation()
 
-  // Close on Escape key
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isMenuOpen) {
-        setIsMenuOpen(false)
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isMenuOpen])
+  useFocusTrap(menuRef, isMenuOpen, () => setIsMenuOpen(false))
 
   // ACTIVE LINK GUIDE
   const isActive = (to) => {
@@ -144,6 +137,7 @@ function Header() {
             className="p-1.5 text-lg hover:text-black transition-colors"
             aria-label="Open menu"
             aria-expanded={isMenuOpen}
+            aria-controls="mobile-navigation"
           >
             <RxHamburgerMenu />
           </button>
@@ -214,8 +208,12 @@ function Header() {
 
       {/* MOBILE MENU PANEL */}
       <div
+        id="mobile-navigation"
+        ref={menuRef}
         role="dialog"
-        aria-modal="true"
+        aria-modal={isMenuOpen ? 'true' : undefined}
+        aria-hidden={!isMenuOpen}
+        inert={!isMenuOpen}
         aria-label="Mobile Navigation"
         className={`
           fixed top-0 left-0 h-full w-72 bg-white/95 backdrop-blur-2xl z-50 md:hidden shadow-2xl border-r border-black/[0.06]

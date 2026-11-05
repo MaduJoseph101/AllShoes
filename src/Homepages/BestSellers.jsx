@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io"
+import { fetchAllShoeProducts } from '../api/products'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -22,11 +23,12 @@ function BestSellers() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
 
   const [visibleCount, setVisibleCount] = useState(getVisibleCount)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [withTransition, setWithTransition] = useState(true)
-  const isJumping = useRef(false)
+  const [isJumping, setIsJumping] = useState(false)
   const prevVisibleCount = useRef(visibleCount)
   const hasPositioned = useRef(false)
 
@@ -37,8 +39,8 @@ function BestSellers() {
   const viewportRef = useRef(null)
   const isMobile = visibleCount === 1
 
-  const prevDisabled = isJumping.current || data.length === 0
-  const nextDisabled = isJumping.current || data.length === 0
+  const prevDisabled = isJumping || data.length === 0
+  const nextDisabled = isJumping || data.length === 0
 
   useEffect(() => {
     let resizeTimeout
@@ -54,57 +56,60 @@ function BestSellers() {
   }, [])
 
   useEffect(() => {
-    let ignore = false
+    const controller = new AbortController()
 
     const fetchShoes = async () => {
       try {
-        const [mensRes, womensRes] = await Promise.all([
-          fetch("https://dummyjson.com/products/category/mens-shoes"),
-          fetch("https://dummyjson.com/products/category/womens-shoes"),
-        ])
-        if (!mensRes.ok || !womensRes.ok) throw new Error("Request failed")
-
-        const mensData = await mensRes.json()
-        const womensData = await womensRes.json()
-
+        const products = await fetchAllShoeProducts(controller.signal)
         const mixed = []
-        const max = Math.max(mensData.products.length, womensData.products.length)
+        const mensProducts = products.filter((product) => product.category === 'mens-shoes')
+        const womensProducts = products.filter((product) => product.category === 'womens-shoes')
+        const max = Math.max(mensProducts.length, womensProducts.length)
         for (let i = 0; i < max; i++) {
-          if (mensData.products[i]) mixed.push(mensData.products[i])
-          if (womensData.products[i]) mixed.push(womensData.products[i])
+          if (mensProducts[i]) mixed.push(mensProducts[i])
+          if (womensProducts[i]) mixed.push(womensProducts[i])
         }
 
-        if (!ignore) setData(mixed)
+        if (!controller.signal.aborted) {
+          setData(mixed)
+          setError(null)
+        }
       } catch (err) {
-        if (!ignore) setError(err.message)
+        if (err.name !== 'AbortError') setError(err.message)
       } finally {
-        if (!ignore) setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
 
     fetchShoes()
-    return () => { ignore = true }
-  }, [])
+    return () => controller.abort()
+  }, [retryCount])
 
   useEffect(() => {
     if (!withTransition) {
-      requestAnimationFrame(() => {
+      const frameId = requestAnimationFrame(() => {
         setWithTransition(true)
-        isJumping.current = false
+        setIsJumping(false)
       })
+      return () => cancelAnimationFrame(frameId)
     }
+    return undefined
   }, [withTransition])
 
   useEffect(() => {
     if (!loading && data.length > 0) {
       const safeCount = Math.min(visibleCount, data.length)
-      if (!hasPositioned.current || prevVisibleCount.current !== visibleCount) {
+      if (hasPositioned.current && prevVisibleCount.current === visibleCount) return
+
+      const frameId = requestAnimationFrame(() => {
         setWithTransition(false)
+        setCurrentIndex(safeCount)
         hasPositioned.current = true
-      }
-      setCurrentIndex(safeCount)
-      prevVisibleCount.current = visibleCount
+        prevVisibleCount.current = visibleCount
+      })
+      return () => cancelAnimationFrame(frameId)
     }
+    return undefined
   }, [visibleCount, loading, data.length])
 
   // SKELETON
@@ -132,7 +137,22 @@ function BestSellers() {
     </section>
   )
 
-  if (error) return null
+  if (error) return (
+    <section aria-label="Trending products" className="w-full max-w-7xl mx-auto my-16 px-4 sm:px-6 font-jakarta text-center">
+      <p className="text-sm text-neutral-500">Trending products are unavailable right now.</p>
+      <button
+        type="button"
+        onClick={() => {
+          setError(null)
+          setLoading(true)
+          setRetryCount((count) => count + 1)
+        }}
+        className="mt-2 text-xs font-medium text-neutral-700 underline hover:text-black"
+      >
+        Try again
+      </button>
+    </section>
+  )
   if (data.length === 0) return null
 
   const safeVisibleCount = Math.min(visibleCount, data.length)
@@ -144,13 +164,13 @@ function BestSellers() {
   const realSlideNumber = (((currentIndex - safeVisibleCount) % data.length) + data.length) % data.length + 1
 
   const handleNext = () => {
-    if (isJumping.current) return
+    if (isJumping) return
     setWithTransition(true)
     setCurrentIndex((prev) => prev + 1)
   }
 
   const handlePrev = () => {
-    if (isJumping.current) return
+    if (isJumping) return
     setWithTransition(true)
     setCurrentIndex((prev) => prev - 1)
   }
@@ -161,20 +181,20 @@ function BestSellers() {
     if (currentIndex >= data.length + safeVisibleCount || currentIndex < safeVisibleCount) {
       const relative = currentIndex - safeVisibleCount
       const normalized = ((relative % data.length) + data.length) % data.length
-      isJumping.current = true
+      setIsJumping(true)
       setWithTransition(false)
       setCurrentIndex(normalized + safeVisibleCount)
     }
   }
 
   const handleDragStart = (e) => {
-    if (!isMobile || isJumping.current) return
+    if (!isMobile || isJumping) return
     if (e.pointerType === 'mouse' && e.button !== 0) return
     dragState.current = { active: true, startX: e.clientX, moved: false }
     dragPxRef.current = 0
     setDragPx(0)
     setWithTransition(false)
-    try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* noop */ }
+    e.currentTarget.setPointerCapture(e.pointerId)
   }
 
   const handleDragMove = (e) => {

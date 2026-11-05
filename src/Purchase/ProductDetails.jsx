@@ -4,6 +4,7 @@ import { FaHeart } from 'react-icons/fa'
 import { FiHeart, FiArrowLeft, FiCheck } from 'react-icons/fi'
 import { useCart } from '../CartContext'
 import ProductsDisplay from './ProductsDisplay'
+import { fetchProductById } from '../api/products'
 
 const MENS_SIZES = [8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 14, 15]
 const OUT_OF_STOCK_SIZES = [12, 15]
@@ -15,27 +16,29 @@ function ProductDetails() {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
   
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedSize, setSelectedSize] = useState(null)
   const [selectedColor, setSelectedColor] = useState(0)
 
   useEffect(() => {
+    const controller = new AbortController()
     const fetchProductDetails = async () => {
       try {
         setLoading(true)
-        const res = await fetch(`https://dummyjson.com/products/${id}`)
-        if (!res.ok) throw new Error('Product not found')
-        const data = await res.json()
+        setError(null)
+        const data = await fetchProductById(id, controller.signal)
         setProduct(data)
       } catch (err) {
-        setError(err.message)
+        if (err.name !== 'AbortError') setError(err.message)
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
     fetchProductDetails()
-  }, [id])
+    return () => controller.abort()
+  }, [id, retryCount])
 
   const colors = [
     { name: 'Natural Charcoal', bg: 'bg-[#2b2b2b]', border: 'border-black' },
@@ -95,6 +98,17 @@ function ProductDetails() {
         <div className="text-center space-y-4 max-w-sm">
           <h2 className="text-xl font-semibold text-neutral-900">Product Not Found</h2>
           <p className="text-neutral-500 text-sm">The style you are looking for is currently unavailable.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setError(null)
+              setLoading(true)
+              setRetryCount((count) => count + 1)
+            }}
+            className="inline-block text-neutral-700 underline text-xs font-medium hover:text-black"
+          >
+            Try again
+          </button>
           <Link to="/" className="inline-block bg-[#000000] text-white px-6 py-3 rounded-full text-xs font-medium">
             Return to Homepage
           </Link>

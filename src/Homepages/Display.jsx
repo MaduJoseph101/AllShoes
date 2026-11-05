@@ -1,4 +1,5 @@
 import MenButton from '../Props/MenButton'
+import WomenButton from '../Props/WomenButton'
 
 const SECTIONS = [
   {
@@ -57,13 +58,13 @@ function Display() {
                   {box.title}
                 </h2>
 
-                <div className="flex items-center gap-3 pt-2">
+                <div className="flex items-center justify-between gap-3 pt-2">
                   <MenButton 
                     MenButton="Shop Men" 
                     to="/men"
                   />
-                  <MenButton 
-                    MenButton="Shop Women" 
+                  <WomenButton 
+                    WomenButton="Shop Women" 
                     to="/women"
                   />
                 </div>

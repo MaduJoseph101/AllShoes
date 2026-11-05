@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useCart } from '../CartContext'
 import { FiCheckCircle, FiArrowRight, FiArrowLeft } from 'react-icons/fi'
 import { RxCross2 } from 'react-icons/rx'
+import useFocusTrap from '../useFocusTrap'
+import { calculateOrderTotals } from './pricing'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -9,10 +11,24 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 })
 
 function CheckoutModal() {
-  const { isCheckoutOpen, closeCheckout, subtotal, clearCart, user } = useCart()
-  const [step, setStep] = useState(1) // 1: Shipping, 2: Payment, 3: Confirmation
+  const { isCheckoutOpen, closeCheckout, subtotal, clearCart, user, checkoutDiscount } = useCart()
+  if (!isCheckoutOpen) return null
 
-  // FORM STATES
+  return (
+    <CheckoutDialog
+      closeCheckout={closeCheckout}
+      subtotal={subtotal}
+      clearCart={clearCart}
+      user={user}
+      checkoutDiscount={checkoutDiscount}
+    />
+  )
+}
+
+function CheckoutDialog({ closeCheckout, subtotal, clearCart, user, checkoutDiscount }) {
+  const [step, setStep] = useState(1) // 1: Shipping, 2: Payment, 3: Confirmation
+  const dialogRef = useRef(null)
+
   const [formData, setFormData] = useState({
     fullName: user?.fullName || '',
     email: user?.email || '',
@@ -26,59 +42,23 @@ function CheckoutModal() {
     cardCvc: '',
   })
 
-  // Synchronize with user profile
-  useEffect(() => {
-    if (isCheckoutOpen) {
-      if (user) {
-        setFormData((prev) => ({
-          ...prev,
-          fullName: user.fullName || '',
-          email: user.email || '',
-          address: user.address || '',
-          city: user.city || '',
-          zip: user.zip || '',
-          phone: user.phone || '',
-        }))
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          fullName: '',
-          email: '',
-          address: '',
-          city: '',
-          zip: '',
-          phone: '',
-        }))
-      }
-    }
-  }, [isCheckoutOpen, user])
-
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     closeCheckout()
     if (step === 3) {
       setStep(1)
     }
-  }
+  }, [closeCheckout, step])
 
-  // Escape key handler
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isCheckoutOpen) {
-        handleClose()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isCheckoutOpen])
+  useFocusTrap(dialogRef, true, handleClose)
 
   const [orderId, setOrderId] = useState('')
+  const [completedOrder, setCompletedOrder] = useState(null)
   const [errors, setErrors] = useState({})
 
-  if (!isCheckoutOpen) return null
-
-  const shippingCost = subtotal >= 100 ? 0 : 9.99
-  const tax = subtotal * 0.08
-  const total = subtotal + shippingCost + tax
+  const { discount, shippingCost, tax, total } = calculateOrderTotals(
+    subtotal,
+    checkoutDiscount.discountRate,
+  )
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -117,6 +97,10 @@ function CheckoutModal() {
     } else if (step === 2 && validateStep2()) {
       const generatedId = `ALL-${Math.floor(100000 + Math.random() * 900000)}`
       setOrderId(generatedId)
+      setCompletedOrder({
+        ...calculateOrderTotals(subtotal, checkoutDiscount.discountRate),
+        promoCode: checkoutDiscount.promoCode,
+      })
       setStep(3)
       clearCart()
     }
@@ -127,10 +111,11 @@ function CheckoutModal() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="checkout-title"
+      ref={dialogRef}
       className="fixed inset-0 z-50 overflow-y-auto font-jakarta flex items-center justify-center p-4 sm:p-6"
     >
       {/* BACKDROP */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300" onClick={handleClose} />
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300" onClick={handleClose} aria-hidden="true" />
 
       {/* MODAL CARD */}
       <div className="relative bg-white rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden border border-black/[0.06] z-10 flex flex-col max-h-[90vh]">
@@ -275,9 +260,19 @@ function CheckoutModal() {
                   <span>Subtotal</span>
                   <span className="font-medium text-neutral-900">{currencyFormatter.format(subtotal)}</span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-emerald-700">
+                    <span>Discount{checkoutDiscount.promoCode ? ` (${checkoutDiscount.promoCode})` : ''}</span>
+                    <span className="font-medium">-{currencyFormatter.format(discount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span className="font-medium text-neutral-900">{shippingCost === 0 ? 'Free' : currencyFormatter.format(shippingCost)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Estimated Tax (8%)</span>
+                  <span className="font-medium text-neutral-900">{currencyFormatter.format(tax)}</span>
                 </div>
                 <div className="flex justify-between text-neutral-900 font-semibold pt-2 border-t border-black/[0.06]">
                   <span>Total Due</span>
@@ -393,9 +388,27 @@ function CheckoutModal() {
                   <span className="text-neutral-500">Delivering To</span>
                   <span className="font-medium text-neutral-900">{formData.fullName}, {formData.city}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">Subtotal</span>
+                  <span>{currencyFormatter.format(completedOrder?.subtotal ?? 0)}</span>
+                </div>
+                {(completedOrder?.discount ?? 0) > 0 && (
+                  <div className="flex justify-between text-emerald-700">
+                    <span>Discount{completedOrder.promoCode ? ` (${completedOrder.promoCode})` : ''}</span>
+                    <span>-{currencyFormatter.format(completedOrder.discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">Shipping</span>
+                  <span>{completedOrder?.shippingCost === 0 ? 'Free' : currencyFormatter.format(completedOrder?.shippingCost ?? 0)}</span>
+                </div>
+                <div className="flex justify-between border-b border-black/[0.04] pb-2">
+                  <span className="text-neutral-500">Tax</span>
+                  <span>{currencyFormatter.format(completedOrder?.tax ?? 0)}</span>
+                </div>
                 <div className="flex justify-between pt-1 font-semibold text-neutral-900">
                   <span>Amount Paid</span>
-                  <span>{currencyFormatter.format(total)}</span>
+                  <span>{currencyFormatter.format(completedOrder?.total ?? total)}</span>
                 </div>
               </div>
             </div>

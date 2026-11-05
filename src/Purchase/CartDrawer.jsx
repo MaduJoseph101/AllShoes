@@ -1,8 +1,10 @@
-import { useEffect } from 'react'
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../CartContext'
 import { FiTrash2, FiMinus, FiPlus, FiShoppingBag, FiArrowRight } from 'react-icons/fi'
 import { RxCross2 } from 'react-icons/rx'
+import useFocusTrap from '../useFocusTrap'
+import { FREE_SHIPPING_THRESHOLD } from './pricing'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -20,28 +22,19 @@ function CartDrawer() {
     itemCount,
     openCheckout,
   } = useCart()
-
-  // Close on Escape key
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isDrawerOpen) {
-        closeDrawer()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isDrawerOpen, closeDrawer])
+  const drawerRef = useRef(null)
+  useFocusTrap(drawerRef, isDrawerOpen, closeDrawer)
 
   if (!isDrawerOpen) return null
 
-  const shippingThreshold = 100
-  const progressPercent = Math.min((subtotal / shippingThreshold) * 100, 100)
+  const progressPercent = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)
 
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Shopping cart"
+      ref={drawerRef}
       className="fixed inset-0 z-50 overflow-hidden font-jakarta"
     >
       {/* BACKDROP */}
@@ -75,11 +68,11 @@ function CartDrawer() {
           {cartItems.length > 0 && (
             <div className="bg-[#FBFBFD] px-6 py-3.5 border-b border-black/[0.04]">
               <p className="text-[11px] font-medium text-neutral-600 text-center mb-1.5">
-                {subtotal >= shippingThreshold ? (
+                {subtotal >= FREE_SHIPPING_THRESHOLD ? (
                   <span className="text-emerald-700 font-medium">You've unlocked Free Standard Shipping</span>
                 ) : (
                   <>
-                    Add <span className="font-semibold text-neutral-900">{currencyFormatter.format(shippingThreshold - subtotal)}</span> more for Free Shipping
+                    Add <span className="font-semibold text-neutral-900">{currencyFormatter.format(FREE_SHIPPING_THRESHOLD - subtotal)}</span> more for Free Shipping
                   </>
                 )}
               </p>

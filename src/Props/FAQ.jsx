@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { IoIosArrowDown } from 'react-icons/io'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 

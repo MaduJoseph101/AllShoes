@@ -428,7 +428,7 @@ function Signup() {
                       Are you sure you want to delete your profile? This removes your saved shipping information and wishlist permanently.
                     </p>
                   </div>
-                  <div className="flex items-center justify-center gap-3 pt-2">
+                  <div className="flex items-center justify-center gap-5 sm:gap-10 pt-2">
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
                       className="bg-neutral-100 text-neutral-700 text-xs font-medium px-6 py-2.5 rounded-full hover:bg-neutral-200 transition-colors cursor-pointer"
