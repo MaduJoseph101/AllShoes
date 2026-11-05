@@ -4,6 +4,7 @@ import { RiSearchLine } from 'react-icons/ri'
 import FAQ from '../Props/FAQ'
 import FadeIn from '../FadeIn'
 import { fetchAllShoeProducts, searchShoeProducts } from '../api/products'
+import { currencyFormatter } from '../Purchase/pricing'
 
 function SkeletonGrid() {
   return (
@@ -265,7 +266,7 @@ function Allitems() {
                             <p className="text-[10px] text-neutral-400 capitalize">{item.category}</p>
                           </div>
                           <span className="text-xs font-medium text-neutral-900 shrink-0">
-                            ${item.price}
+                            {currencyFormatter.format(item.price)}
                           </span>
                         </button>
                       </li>
@@ -330,7 +331,7 @@ function Allitems() {
                           {product.title}
                         </h3>
                         <span className="text-xs sm:text-sm text-neutral-800 font-semibold shrink-0">
-                          ${product.price}
+                          {currencyFormatter.format(product.price)}
                         </span>
                       </div>
                     </div>

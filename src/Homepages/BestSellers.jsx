@@ -2,11 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io"
 import { fetchAllShoeProducts } from '../api/products'
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
+import { currencyFormatter } from '../Purchase/pricing'
 
 function getVisibleCount() {
   if (typeof window === 'undefined') return 4

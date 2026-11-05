@@ -3,12 +3,7 @@ import { useCart } from '../CartContext'
 import { FiCheckCircle, FiArrowRight, FiArrowLeft } from 'react-icons/fi'
 import { RxCross2 } from 'react-icons/rx'
 import useFocusTrap from '../useFocusTrap'
-import { calculateOrderTotals } from './pricing'
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
+import { calculateOrderTotals, currencyFormatter } from './pricing'
 
 function CheckoutModal() {
   const { isCheckoutOpen, closeCheckout, subtotal, clearCart, user, checkoutDiscount } = useCart()

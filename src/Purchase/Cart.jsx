@@ -4,24 +4,23 @@ import { FiTrash2, FiMinus, FiPlus, FiShoppingBag, FiArrowLeft, FiTag } from 're
 import { FaTruck, FaUndoAlt } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
 import { fetchProductsByCategory } from '../api/products'
-import { calculateOrderTotals } from './pricing'
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
-
-const PROMO_CODES = {
-  ALLSHOES10: 0.10,
-  SAVE20: 0.20,
-}
+import { calculateOrderTotals, currencyFormatter, PROMO_CODES } from './pricing'
 
 function Cart() {
-  const { cartItems, removeFromCart, updateQuantity, clearCart, subtotal, itemCount, openCheckout } = useCart()
+  const {
+    cartItems,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    subtotal,
+    itemCount,
+    openCheckout,
+    appliedPromoCode,
+    applyPromoCode,
+    clearPromoCode,
+  } = useCart()
   const [promoInput, setPromoInput] = useState('')
-  const [appliedPromo, setAppliedPromo] = useState(null)
   const [promoError, setPromoError] = useState('')
-  const [promoSuccess, setPromoSuccess] = useState('')
   const [recommendations, setRecommendations] = useState([])
   const [recommendationsError, setRecommendationsError] = useState(false)
   const [recommendationsRetry, setRecommendationsRetry] = useState(0)
@@ -45,25 +44,21 @@ function Cart() {
 
   const { discount, shippingCost, tax, total } = calculateOrderTotals(
     subtotal,
-    appliedPromo ? PROMO_CODES[appliedPromo] : 0,
+    appliedPromoCode ? PROMO_CODES[appliedPromoCode] : 0,
   )
 
   const handlePromo = () => {
     const code = promoInput.trim().toUpperCase()
-    if (PROMO_CODES[code]) {
-      setAppliedPromo(code)
+    if (applyPromoCode(code)) {
       setPromoError('')
-      setPromoSuccess(`"${code}" applied — ${(PROMO_CODES[code] * 100).toFixed(0)}% discount`)
     } else {
       setPromoError('Invalid code. Try ALLSHOES10 or SAVE20.')
-      setPromoSuccess('')
     }
   }
 
   const removePromo = () => {
-    setAppliedPromo(null)
+    clearPromoCode()
     setPromoInput('')
-    setPromoSuccess('')
     setPromoError('')
   }
 
@@ -182,7 +177,8 @@ function Cart() {
                       </span>
                       <button
                         onClick={() => updateQuantity(item.key, 1)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full bg-white text-neutral-700 shadow-2xs hover:text-black transition-colors cursor-pointer"
+                        disabled={item.quantity >= (item.stock ?? 99)}
+                        className="w-7 h-7 flex items-center justify-center rounded-full bg-white text-neutral-700 shadow-2xs hover:text-black transition-colors disabled:bg-neutral-100 disabled:text-neutral-300 disabled:cursor-not-allowed"
                         aria-label="Increase quantity"
                       >
                         <FiPlus className="text-xs" />
@@ -212,7 +208,7 @@ function Cart() {
                 <FaTruck className="text-neutral-400 text-lg shrink-0" />
                 <div>
                   <p className="text-[11px] font-semibold text-neutral-800">Free Shipping</p>
-                  <p className="text-[10px] text-neutral-400 font-light">On orders over $100</p>
+                  <p className="text-[10px] text-neutral-400 font-light">On orders of $100 or more</p>
                 </div>
               </div>
               <div className="bg-white rounded-2xl p-4 flex items-center gap-3 border border-black/[0.04]">
@@ -233,9 +229,11 @@ function Cart() {
               <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-700 flex items-center gap-2">
                 <FiTag /> Promotion Code
               </h2>
-              {appliedPromo ? (
+              {appliedPromoCode ? (
                 <div className="flex items-center justify-between bg-neutral-100 rounded-2xl px-4 py-3">
-                  <span className="text-xs font-medium text-neutral-900">{promoSuccess}</span>
+                  <span className="text-xs font-medium text-neutral-900">
+                    "{appliedPromoCode}" applied — {(PROMO_CODES[appliedPromoCode] * 100).toFixed(0)}% discount
+                  </span>
                   <button
                     onClick={removePromo}
                     className="text-[10px] font-semibold text-neutral-500 hover:text-red-500 transition-colors cursor-pointer uppercase"
@@ -277,7 +275,7 @@ function Cart() {
                   <span className="font-medium text-neutral-900">{currencyFormatter.format(subtotal)}</span>
                 </div>
 
-                {appliedPromo && (
+                {appliedPromoCode && (
                   <div className="flex justify-between text-emerald-700 font-medium">
                     <span>Discount</span>
                     <span>-{currencyFormatter.format(discount)}</span>
@@ -303,10 +301,7 @@ function Cart() {
               </div>
 
               <button
-                onClick={() => openCheckout({
-                  promoCode: appliedPromo,
-                  discountRate: appliedPromo ? PROMO_CODES[appliedPromo] : 0,
-                })}
+                onClick={() => openCheckout()}
                 className="w-full py-4 bg-[#000000] hover:bg-black text-white font-semibold text-xs tracking-wider uppercase rounded-full transition-all shadow-sm hover:shadow cursor-pointer"
               >
                 Proceed to Checkout

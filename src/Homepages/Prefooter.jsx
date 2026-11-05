@@ -5,7 +5,7 @@ function Prefooter() {
 
   return (
     <section className="max-w-7xl mx-auto my-16 px-4 sm:px-6 font-jakarta">
-      <div className="wide-story-panel bg-[#F5F5F7] h-[70vh] rounded-3xl overflow-hidden grid grid-cols-1 sm:grid-cols-2 border border-black/[0.04]">
+      <div className="wide-story-panel bg-[#F5F5F7] h-auto sm:min-h-[70vh] rounded-3xl overflow-hidden grid grid-cols-1 sm:grid-cols-2 border border-black/[0.04]">
         <div className="relative min-h-[360px] sm:min-h-full w-full bg-[url(/model.jpg)] bg-cover bg-center">
           <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-transparent to-[#F5F5F7]/30" />
         </div>

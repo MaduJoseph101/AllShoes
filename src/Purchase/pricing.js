@@ -1,4 +1,13 @@
 export const FREE_SHIPPING_THRESHOLD = 100
+export const PROMO_CODES = {
+  ALLSHOES10: 0.1,
+  SAVE20: 0.2,
+}
+
+export const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+})
 
 const TAX_RATE = 0.08
 const SHIPPING_COST = 9.99

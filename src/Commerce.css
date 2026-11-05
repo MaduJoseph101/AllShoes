@@ -110,7 +110,7 @@ button:disabled {
   }
 
   .wide-story-panel {
-    height: min(70vh, 58rem);
+    min-height: min(70vh, 58rem);
   }
 
   .wide-product-gallery {

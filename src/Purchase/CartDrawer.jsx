@@ -4,12 +4,12 @@ import { useCart } from '../CartContext'
 import { FiTrash2, FiMinus, FiPlus, FiShoppingBag, FiArrowRight } from 'react-icons/fi'
 import { RxCross2 } from 'react-icons/rx'
 import useFocusTrap from '../useFocusTrap'
-import { FREE_SHIPPING_THRESHOLD } from './pricing'
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
+import {
+  calculateOrderTotals,
+  currencyFormatter,
+  FREE_SHIPPING_THRESHOLD,
+  PROMO_CODES,
+} from './pricing'
 
 function CartDrawer() {
   const {
@@ -21,6 +21,7 @@ function CartDrawer() {
     subtotal,
     itemCount,
     openCheckout,
+    appliedPromoCode,
   } = useCart()
   const drawerRef = useRef(null)
   useFocusTrap(drawerRef, isDrawerOpen, closeDrawer)
@@ -28,6 +29,10 @@ function CartDrawer() {
   if (!isDrawerOpen) return null
 
   const progressPercent = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)
+  const { discount, shippingCost, tax, total } = calculateOrderTotals(
+    subtotal,
+    appliedPromoCode ? PROMO_CODES[appliedPromoCode] : 0,
+  )
 
   return (
     <div
@@ -192,19 +197,39 @@ function CartDrawer() {
           {/* DRAWER FOOTER */}
           {cartItems.length > 0 && (
             <div className="p-6 bg-[#FBFBFD] border-t border-black/[0.06] space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-neutral-500 font-normal">Subtotal</span>
-                <span className="text-base font-semibold text-neutral-900">
-                  {currencyFormatter.format(subtotal)}
-                </span>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between text-neutral-600">
+                  <span>Subtotal</span>
+                  <span className="font-medium text-neutral-900">{currencyFormatter.format(subtotal)}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-emerald-700">
+                    <span>Discount ({appliedPromoCode})</span>
+                    <span className="font-medium">-{currencyFormatter.format(discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-neutral-600">
+                  <span>Shipping</span>
+                  <span className="font-medium text-neutral-900">
+                    {shippingCost === 0 ? 'Free' : currencyFormatter.format(shippingCost)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-neutral-600">
+                  <span>Estimated Tax (8%)</span>
+                  <span className="font-medium text-neutral-900">{currencyFormatter.format(tax)}</span>
+                </div>
+                <div className="flex justify-between border-t border-black/[0.06] pt-2 font-semibold text-neutral-900">
+                  <span>Estimated Total</span>
+                  <span>{currencyFormatter.format(total)}</span>
+                </div>
               </div>
               <p className="text-[11px] text-neutral-400 font-light text-center">
-                Shipping and taxes calculated at checkout.
+                Final total is confirmed at checkout.
               </p>
 
               <div className="space-y-2.5">
                 <button
-                  onClick={openCheckout}
+                  onClick={() => openCheckout()}
                   className="w-full py-3.5 bg-[#000000] hover:bg-black text-white text-xs font-semibold tracking-wider uppercase rounded-full transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow"
                 >
                   Checkout <FiArrowRight />

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
+import { PROMO_CODES } from './Purchase/pricing'
 
 const CartContext = createContext(null)
 
@@ -292,6 +293,7 @@ export function CartProvider({ children }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [checkoutDiscount, setCheckoutDiscount] = useState({ promoCode: null, discountRate: 0 })
+  const [appliedPromoCode, setAppliedPromoCode] = useState(null)
   const passwordMigrationRef = useRef(null)
 
   // LOADED USER EMAIL TO PREVENT DUPLICATES
@@ -396,6 +398,8 @@ export function CartProvider({ children }) {
           setCartItems([])
           setWishlistItems([])
         }
+        setAppliedPromoCode(null)
+        setCheckoutDiscount({ promoCode: null, discountRate: 0 })
       }
     }
 
@@ -438,6 +442,8 @@ export function CartProvider({ children }) {
     saveActiveUser(activeUser)
     loadedEmailRef.current = emailKey
     setUser(activeUser)
+    setAppliedPromoCode(null)
+    setCheckoutDiscount({ promoCode: null, discountRate: 0 })
 
     // Load any existing cart/wishlist for this email (or start fresh)
     const existingCart = loadUserCart(activeUser)
@@ -512,6 +518,8 @@ export function CartProvider({ children }) {
 
     loadedEmailRef.current = emailKey
     setUser(activeUser)
+    setAppliedPromoCode(null)
+    setCheckoutDiscount({ promoCode: null, discountRate: 0 })
 
     // Load user's tied cart and wishlist
     const userCart = loadUserCart(activeUser)
@@ -602,6 +610,8 @@ export function CartProvider({ children }) {
     setUser(null)
     setCartItems([])
     setWishlistItems([])
+    setAppliedPromoCode(null)
+    setCheckoutDiscount({ promoCode: null, discountRate: 0 })
   }, [])
 
   const deleteUser = useCallback(() => {
@@ -627,25 +637,32 @@ export function CartProvider({ children }) {
     setUser(null)
     setCartItems([])
     setWishlistItems([])
+    setAppliedPromoCode(null)
+    setCheckoutDiscount({ promoCode: null, discountRate: 0 })
   }, [user])
 
   // DRAWER AND CHECKOUT CONTROLS
   const openDrawer = useCallback(() => setIsDrawerOpen(true), [])
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), [])
-  const openCheckout = useCallback((discount = {}) => {
+  const openCheckout = useCallback(() => {
     setIsDrawerOpen(false)
     setCheckoutDiscount({
-      promoCode: discount.promoCode || null,
-      discountRate: Number.isFinite(discount.discountRate)
-        ? Math.min(1, Math.max(0, discount.discountRate))
-        : 0,
+      promoCode: appliedPromoCode,
+      discountRate: appliedPromoCode ? PROMO_CODES[appliedPromoCode] : 0,
     })
     setIsCheckoutOpen(true)
-  }, [])
+  }, [appliedPromoCode])
   const closeCheckout = useCallback(() => {
     setIsCheckoutOpen(false)
     setCheckoutDiscount({ promoCode: null, discountRate: 0 })
   }, [])
+  const applyPromoCode = useCallback((code) => {
+    const normalizedCode = String(code).trim().toUpperCase()
+    if (!Object.prototype.hasOwnProperty.call(PROMO_CODES, normalizedCode)) return false
+    setAppliedPromoCode(normalizedCode)
+    return true
+  }, [])
+  const clearPromoCode = useCallback(() => setAppliedPromoCode(null), [])
 
   // ITEM STOCK LIMIT RESTRICTION & AUTH GUARD
   const addToCart = useCallback((product, size, color, openDrawerAfter = true) => {
@@ -739,6 +756,8 @@ export function CartProvider({ children }) {
   // CLEAR CART
   const clearCart = useCallback(() => {
     setCartItems([])
+    setAppliedPromoCode(null)
+    setCheckoutDiscount({ promoCode: null, discountRate: 0 })
     if (user && user.email) {
       const key = getCartStorageKey(user)
       if (key) {
@@ -833,6 +852,9 @@ export function CartProvider({ children }) {
         clearCart,
         itemCount,
         subtotal,
+        appliedPromoCode,
+        applyPromoCode,
+        clearPromoCode,
         isDrawerOpen,
         openDrawer,
         closeDrawer,

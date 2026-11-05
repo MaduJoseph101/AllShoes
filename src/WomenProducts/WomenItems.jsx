@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import FAQ from '../Props/FAQ'
 import FadeIn from '../FadeIn'
 import { fetchProductsByCategory } from '../api/products'
+import { currencyFormatter } from '../Purchase/pricing'
 
 function WomenItems() {
   const [products, setProducts] = useState([])
@@ -110,7 +111,7 @@ function WomenItems() {
                           {product.title}
                         </h3>
                         <span className="text-xs sm:text-sm text-neutral-800 font-semibold shrink-0">
-                          ${product.price}
+                          {currencyFormatter.format(product.price)}
                         </span>
                       </div>
                     </div>

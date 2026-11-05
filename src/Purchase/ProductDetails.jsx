@@ -5,6 +5,7 @@ import { FiHeart, FiArrowLeft, FiCheck } from 'react-icons/fi'
 import { useCart } from '../CartContext'
 import ProductsDisplay from './ProductsDisplay'
 import { fetchProductById } from '../api/products'
+import { currencyFormatter } from './pricing'
 
 const MENS_SIZES = [8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 14, 15]
 const OUT_OF_STOCK_SIZES = [12, 15]
@@ -176,10 +177,10 @@ function ProductDetails() {
               </h1>
               <div className="flex items-baseline gap-3 pt-1">
                 <span className="text-xl sm:text-2xl font-semibold text-neutral-900">
-                  ${product.price}
+                  {currencyFormatter.format(product.price)}
                 </span>
                 <span className="text-xs text-neutral-500 font-light">
-                  Free standard shipping & 30-day returns
+                  Free shipping on orders of $100 or more & 30-day returns
                 </span>
               </div>
             </div>
@@ -261,7 +262,7 @@ function ProductDetails() {
                     ? 'Maximum Stock Reached'
                     : cartQty > 0
                     ? `In Cart (×${cartQty}) — Add Another`
-                    : `Add to Cart — $${product.price}`}
+                    : `Add to Cart — ${currencyFormatter.format(product.price)}`}
                 </button>
 
                 <button
@@ -322,7 +323,7 @@ function ProductDetails() {
               <div>
                 <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-neutral-400">Feedback</span>
                 <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-neutral-900 mt-0.5">
-                  Verified Reviews ({product.reviews.length})
+                  Customer Reviews ({product.reviews.length})
                 </h2>
               </div>
             </div>
@@ -332,7 +333,7 @@ function ProductDetails() {
                 <div key={idx} className="p-6 bg-[#F5F5F7] rounded-3xl space-y-3">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-medium text-neutral-900">{rev.reviewerName}</span>
-                    <span className="text-neutral-500 font-medium">★ {rev.rating}.0</span>
+                    <span className="text-neutral-500 font-medium">★ {Number(rev.rating).toFixed(1)}</span>
                   </div>
                   <p className="text-xs text-neutral-700 italic font-light leading-relaxed">
                     "{rev.comment}"

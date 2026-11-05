@@ -4,11 +4,7 @@ import { useCart } from '../CartContext'
 import { FiHeart, FiArrowLeft } from 'react-icons/fi'
 import { FaHeart } from 'react-icons/fa'
 import FadeIn from '../FadeIn'
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
+import { currencyFormatter } from './pricing'
 
 function SavedItems() {
   const { wishlistItems, toggleWishlist } = useCart()
