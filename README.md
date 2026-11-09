@@ -1,3 +1,4 @@
+<img width="956" height="506" alt="Screenshot 2026-11-09 225232" src="https://github.com/user-attachments/assets/96df5de9-b8af-4dcd-95ca-88297472057d" />
 # AllShoes
 
 A responsive frontend shoe-store demo built with **React 19**, **Tailwind CSS 4**, and **Vite 8**. Browse men's and women's footwear, manage a cart with stock-aware quantities, save items to a wishlist, and explore a simulated checkout flow.
