@@ -1,13 +1,12 @@
-# 👟 AllShoes
+# AllShoes
 
-A modern, fully responsive e-commerce shoe store built with **React 19**, **Tailwind CSS 4**, and **Vite 8**. Browse men's and women's footwear, manage a cart with stock-aware quantities, save items to a wishlist, and check out — all with smooth Framer Motion animations and a polished storefront UI.
+A responsive frontend shoe-store demo built with **React 19**, **Tailwind CSS 4**, and **Vite 8**. Browse men's and women's footwear, manage a cart with stock-aware quantities, save items to a wishlist, and explore a simulated checkout flow.
 
-> **Live Demo →** _deployed on Vercel (https://allshoes-theta.vercel.app/)_
+> **[View the live demo](https://allshoes-theta.vercel.app/)**
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
@@ -26,7 +25,7 @@ A modern, fully responsive e-commerce shoe store built with **React 19**, **Tail
 | **Multi-Tab Sync** | Cart, wishlist, and auth state stay in sync across browser tabs via the `storage` event |
 | **Accessibility** | ARIA labels, keyboard-navigable carousels & size selectors, screen-reader live regions |
 
-> **Authentication demo:** Sign-up, sign-in, and account data are handled entirely in the browser using `localStorage`; there is no authentication backend, server-side security, or real user database. Browser storage can be inspected or changed, so use demo credentials only.
+> **Demo limitations:** This is a frontend-only project. Accounts, passwords, cart, and wishlist data are stored in the browser's `localStorage`; there is no authentication backend, server-side security, or real user database. Browser storage can be inspected, modified, or cleared, so use demo credentials only. Checkout is simulated: it does not charge a payment method, send an email receipt, or save an order to a server. Do not enter real payment-card details.
 
 ---
 
@@ -37,8 +36,7 @@ A modern, fully responsive e-commerce shoe store built with **React 19**, **Tail
 - **Styling:** [Tailwind CSS 4](https://tailwindcss.com/) (via `@tailwindcss/vite` plugin)
 - **Animations:** [Framer Motion 13](https://www.framer.com/motion/)
 - **Icons:** [React Icons](https://react-icons.github.io/react-icons/) (Feather, Font Awesome, Remix, etc.)
-- **Analytics:** [Vercel Analytics](https://vercel.com/analytics)
-- **Fonts:** [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) (Google Fonts)
+- **Fonts:** [Inter](https://fonts.google.com/specimen/Inter) and [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) (Google Fonts)
 - **API:** [DummyJSON](https://dummyjson.com/) — product data for shoes
 - **Linting:** ESLint 10 with `eslint-plugin-react-hooks` & `eslint-plugin-react-refresh`
 - **Deployment:** Vercel (with SPA rewrites via `vercel.json`)
@@ -51,7 +49,7 @@ A modern, fully responsive e-commerce shoe store built with **React 19**, **Tail
 AllShoes/
 ├── public/                      # Static assets served as-is
 │   ├── AllShoes.svg             # Favicon
-│   ├── home.jpg                 # Hero background
+│   ├── home1.jpg                # Homepage hero background
 │   ├── model.jpg                # Prefooter model image
 │   ├── CarouselImages/          # Carousel card backgrounds
 │   │   ├── Blue.jpg
@@ -76,9 +74,12 @@ AllShoes/
 │   ├── Footer.jsx               # Site footer with links, newsletter, social icons
 │   ├── Homepage.jsx             # Landing page — hero, carousel, best sellers, display
 │   ├── Signup.jsx               # Sign up / sign in forms + user dashboard
+│   ├── useFocusTrap.js          # Keyboard focus management for dialogs and menus
 │   │
 │   ├── AllPoducts/
 │   │   └── Allitems.jsx         # "Shop All" page with live search & product grid
+│   ├── api/
+│   │   └── products.js          # DummyJSON product API helpers
 │   │
 │   ├── MenProducts/
 │   │   └── MenItems.jsx         # Men's shoes category page
@@ -100,6 +101,7 @@ AllShoes/
 │   │
 │   └── Purchase/
 │       ├── ProductDetails.jsx   # Full product page — gallery, sizes, colors, reviews
+│       ├── pricing.js           # Shared cart and checkout pricing rules
 │       ├── ProductsDisplay.jsx  # "You May Also Like" recommendations grid
 │       ├── Cart.jsx             # Full cart page with promo codes & order summary
 │       ├── CartDrawer.jsx       # Slide-in mini cart overlay
@@ -119,18 +121,18 @@ AllShoes/
 
 ---
 
-##  Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- **Node.js** ≥ 18
-- **npm** ≥ 9 (or use yarn / pnpm)
+- **Node.js** `^20.19.0` or `>=22.12.0` (required by the installed Vite version)
+- **npm** (used for the commands below)
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/AllShoes.git
+git clone https://github.com/MaduJoseph101/AllShoes.git
 cd AllShoes
 
 # Install dependencies
@@ -198,8 +200,8 @@ All global state lives in [`CartContext.jsx`](src/CartContext.jsx), provided via
 ## Styling
 
 - **Tailwind CSS 4** with the Vite plugin — no `tailwind.config.js` needed
-- Custom theme token: `--font-jakarta` for the Plus Jakarta Sans typeface
-- Warm neutral palette (`#ECE9E2` background, `#212121` dark accents)
+- Custom font stack prioritizes Inter, with system sans-serif and Plus Jakarta Sans fallbacks
+- Off-white page background (`#FBFBFD`) with black accents (`#000000`)
 - Fully responsive from `320px` mobile to wide desktop
 
 ---
@@ -215,7 +217,18 @@ Product data is fetched from the public **[DummyJSON API](https://dummyjson.com/
 | `/products/:id` | Individual product details |
 | `/products/search?q=...` | Live search suggestions |
 
-> **Note:** No API key is required. Data is mock/demo data — no real transactions are processed.
+> **Note:** No API key is required. Product data comes from a public demo API and requires an internet connection. Account and commerce state are frontend simulations; no real transactions are processed.
+
+---
+
+## Verification
+
+There is currently no automated test suite configured. Before submitting changes, run the available checks:
+
+```bash
+npm run lint
+npm run build
+```
 
 ---
 
@@ -227,12 +240,6 @@ The project is configured for **Vercel** out of the box:
 2. Import the repo in [Vercel](https://vercel.com)
 3. Vercel auto-detects Vite — no additional config needed
 4. The included `vercel.json` handles SPA client-side routing rewrites
-
----
-
-##  License
-
-This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
