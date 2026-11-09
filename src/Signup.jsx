@@ -28,7 +28,7 @@ function NotificationToast({ notification, onDismiss }) {
     >
       <div className="flex items-center gap-2.5 text-xs font-medium">
         {notification.type === 'success' ? (
-          <FiCheckCircle className="text-sm shrink-0 text-emerald-400" />
+          <FiCheckCircle className="text-sm shrink-0 text-white" />
         ) : (
           <FiAlertCircle className="text-sm shrink-0 text-red-400" />
         )}
@@ -170,6 +170,7 @@ function Signup() {
         phone: user.phone || '',
       })
       setIsEditing(true)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
